@@ -74,15 +74,15 @@ export const loginUser = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
-    const token = jwt.sign({ id: user._id, role: user.role }, 'JWT_SECRET', { expiresIn: '1d' });
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
-    res.status(200).json({ token });
+    res.status(200).json({ token, user });
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
 
 export const googleCallback = (req, res) => {
-  const token = jwt.sign({ id: req.user._id, role: req.user.role }, 'JWT_SECRET', { expiresIn: '1d' });
+  const token = jwt.sign({ id: req.user._id, role: req.user.role }, process.env.JWT_SECRET, { expiresIn: '1d' });
   res.redirect(`/auth/success?token=${token}`);
 };

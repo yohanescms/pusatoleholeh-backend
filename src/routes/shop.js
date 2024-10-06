@@ -1,9 +1,9 @@
 import express from 'express';
 import { createShop } from '../controllers/shop.js';
-import { ruteAman, gwejhSelller } from '../middlewares/auth.js';
+import { ruteAman, verifyRole } from '../middlewares/auth.js';
 
 const router = express.Router();
 
-router.post('/create', ruteAman, gwejhSelller, createShop);
+router.post('/create', ruteAman, verifyRole('seller'), createShop);
 
 export default router;
