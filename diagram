@@ -18,6 +18,8 @@ Table UserPictures {
   path String
   url String
   UserId ObjectId [ref: - Users._id]
+  createdAt Date
+  updatedAt Date
 }
 
 Table Shops {
@@ -50,4 +52,6 @@ Table ProductPictures {
   path String
   url String
   UserId ObjectId [ref: - Products._id]
+  createdAt Date
+  updatedAt Date
 }

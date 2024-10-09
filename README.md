@@ -56,3 +56,15 @@ PUT     /profile
 ## To be Added API
 
 TBA
+## Full Documentation
+
+Full documentation can be accessed at
+[Documentation](https://wiki.anemona.cloud)
+
+
+## Screenshots
+
+Current Database schema
+
+![Diagram](https://raw.githubusercontent.com/Anemonastrum/pusatoleholeh-backend/refs/heads/main/schema.png)
+
