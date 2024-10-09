@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import authRoutes from './routes/auth.js';
 import shopRoutes from './routes/shop.js';
 import productRoutes from './routes/product.js';
+import userRoutes from './routes/user.js';
 import passportConfig from './configs/passport.js';
 
 dotenv.config();
@@ -23,6 +24,7 @@ app.use(passport.session());
 app.use('/auth', authRoutes);
 app.use('/shop', shopRoutes);
 app.use('/product', productRoutes);
+app.use('/profile', userRoutes);
 
 mongoose.connect(process.env.MONGO_URI)
 .then(() => console.log('MongoDB terkonek'))

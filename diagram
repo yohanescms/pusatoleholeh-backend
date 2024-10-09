@@ -12,6 +12,14 @@ Table Users {
   updated_at timestamp
 }
 
+Table UserPictures {
+  _id ObjectId [pk]
+  name String
+  path String
+  url String
+  UserId ObjectId [ref: - Users._id]
+}
+
 Table Shops {
   _id ObjectId [pk]
   name String
@@ -34,13 +42,7 @@ Table Products {
   updatedAt Date
 }
 
-Table UserPictures {
-  _id ObjectId [pk]
-  name String
-  path String
-  url String
-  UserId ObjectId [ref: - Users._id]
-}
+
 
 Table ProductPictures {
   _id ObjectId [pk]
