@@ -15,7 +15,3 @@ export const createShop = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
-
-export const updateShop = async (req,  res) => {
-  const { name, description, location } = req.body;
-};

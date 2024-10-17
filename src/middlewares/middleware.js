@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/user.js';
 
-export const ruteAman = async (req, res, next) => {
+export const safeRoute = async (req, res, next) => {
     let token;
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         token = req.headers.authorization.split(' ')[1];        
@@ -24,7 +24,17 @@ export const ruteAman = async (req, res, next) => {
 
 export const verifyRole = (...allowedRoles) => (req, res, next) => {
     if (!allowedRoles.includes(req.user.role)) {
-        return res.status(403).json({ message: 'role ga valid' });
+        return res.status(403).json({ message: 'invalid role' });
+    }
+    next();
+};
+
+export const checkShopOwner = async (req, res, next) => {
+    const { shopId } = req.body;
+    const shop = await Shop.findById(shopId);
+
+    if (!shop || String(shop.ownerId) !== req.user._id.toString()) {
+        return res.status(403).json({ message: 'You do not have permission to modify this shop\'s products.' });
     }
     next();
 };

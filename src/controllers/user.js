@@ -1,5 +1,5 @@
 import User from '../models/user.js';
-import UserPictures from '../models/userPictures.js';
+import UserImage from '../models/userImage.js';
 import multer from 'multer';
 import fs from 'fs';
 import sharp from 'sharp';
@@ -36,67 +36,68 @@ const saveAsWebp = async (file, uploadPath) => {
 };
 
 export const updateUserProfile = async (req, res) => {
-  upload(req, res, async (err) => {
-    if (err) {
-      return res.status(400).json({ message: err.message });
-    }
+  try {
+    await new Promise((resolve, reject) => {
+      upload(req, res, (err) => (err ? reject(err) : resolve()));
+    });
 
-    try {
-      const userId = req.user._id;
-      const { name, address, phoneNumber } = req.body;
+    const userId = req.user._id;
+    const { name, address, phoneNumber } = req.body;
 
-      const user = await User.findById(userId);
-      if (!user) return res.status(404).json({ message: 'User not found' });
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
-      user.name = name || user.name;
-      user.address = address || user.address;
-      user.phoneNumber = phoneNumber || user.phoneNumber;
+    user.name = name || user.name;
+    user.address = address || user.address;
+    user.phoneNumber = phoneNumber || user.phoneNumber;
 
-      const uploadPath = './images/users';
+    const uploadPath = process.env.UPLOAD_PATH || './images/users';
 
-      if (req.file) {
-        const { filename, path: filePath, url } = await saveAsWebp(req.file, uploadPath);
+    if (req.file) {
+      const { filename, path: filePath, url } = await saveAsWebp(req.file, uploadPath);
 
-        let userPicture = await UserPictures.findOne({ UserId: userId });
+      let userPicture = await UserImage.findOne({ UserId: userId });
 
-        if (userPicture) {
-          userPicture.name = filename;
-          userPicture.path = filePath;
-          userPicture.url = `${req.protocol}://${req.get('host')}/images/users/${filename}`;
-          await userPicture.save();
-        } else {
-          userPicture = new UserPictures({
-            name: filename,
-            path: filePath,
-            url: `${req.protocol}://${req.get('host')}/images/users/${filename}`,
-            UserId: userId,
-          });
-          await userPicture.save();
-        }
+      if (userPicture) {
+        fs.unlink(userPicture.path, (err) => {
+          if (err) console.error(`Failed to delete old image: ${err.message}`);
+        });
+        userPicture.name = filename;
+        userPicture.path = filePath;
+        userPicture.url = `${req.protocol}://${req.get('host')}/images/users/${filename}`;
+        await userPicture.save();
+      } else {
+        userPicture = new UserImage({
+          name: filename,
+          path: filePath,
+          url: `${req.protocol}://${req.get('host')}/images/users/${filename}`,
+          UserId: userId,
+        });
+        await userPicture.save();
       }
-
-      const updatedUser = await user.save();
-      res.status(200).json({ message: 'Profile updated successfully', user: updatedUser });
-    } catch (error) {
-      res.status(500).json({ message: 'Error updating profile', error: error.message });
     }
-  });
+
+    const updatedUser = await user.save();
+    res.status(200).json({ message: 'Profile updated successfully', user: updatedUser });
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating profile', error: error.message });
+  }
 };
 
 export const getUserProfile = async (req, res) => {
-    try {
-      const userId = req.user._id;
-  
-      const user = await User.findById(userId).lean();
-      if (!user) return res.status(404).json({ message: 'User not found' });
-  
-      const profilePicture = await UserPictures.findOne({ UserId: userId });
-  
-      res.status(200).json({ 
-        ...user, 
-        profilePicture 
-      });
-    } catch (error) {
-      res.status(500).json({ message: 'Error fetching user profile', error: error.message });
-    }
-  };
+  try {
+    const userId = req.user._id;
+
+    const user = await User.findById(userId).lean();
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const profilePicture = await UserImage.findOne({ UserId: userId });
+
+    res.status(200).json({
+      ...user,
+      profilePicture,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching user profile', error: error.message });
+  }
+};

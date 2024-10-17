@@ -6,18 +6,18 @@ Table Users {
   role String [note: "buyer, seller, admin"]
   address String
   phoneNumber String
-  is_banned boolean
+  isBanned boolean
   googleId varchar [unique]
-  created_at timestamp
-  updated_at timestamp
+  createdAt Date
+  updatedAt Date
 }
 
-Table UserPictures {
+Table UserImages {
   _id ObjectId [pk]
   name String
   path String
   url String
-  UserId ObjectId [ref: - Users._id]
+  userId ObjectId [ref: - Users._id]
   createdAt Date
   updatedAt Date
 }
@@ -28,6 +28,26 @@ Table Shops {
   description String
   ownerId ObjectId [ref: > Users._id]
   location String
+  createdAt Date
+  updatedAt Date
+}
+
+Table ShopImages {
+  _id ObjectId [pk]
+  name String
+  path String
+  url String
+  shopId ObjectId [ref: - Shops._id]
+  createdAt Date
+  updatedAt Date
+}
+
+Table ShopBanner {
+  _id ObjectId [pk]
+  name String
+  path String
+  url String
+  shopId ObjectId [ref: - Shops._id]
   createdAt Date
   updatedAt Date
 }
@@ -44,14 +64,12 @@ Table Products {
   updatedAt Date
 }
 
-
-
-Table ProductPictures {
+Table ProductImages {
   _id ObjectId [pk]
   name String
   path String
   url String
-  UserId ObjectId [ref: - Products._id]
+  productId ObjectId [ref: - Products._id]
   createdAt Date
   updatedAt Date
 }

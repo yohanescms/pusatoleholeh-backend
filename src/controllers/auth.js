@@ -6,7 +6,7 @@ export const registerUser = async (req, res) => {
   const { name, email, password, role } = req.body;
   try {
     const userExists = await User.findOne({ email });
-    if (userExists) return res.status(400).json({ message: 'User sudah terdaftar le' });
+    if (userExists) return res.status(400).json({ message: 'User already exist' });
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -17,7 +17,7 @@ export const registerUser = async (req, res) => {
       role: role || 'buyer',
     });
 
-    res.status(201).json({ message: 'Sukses registrasi user', user: newUser });
+    res.status(201).json({ message: 'Successfully registered', user: newUser });
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
@@ -27,7 +27,7 @@ export const registerSeller = async (req, res) => {
   const { name, email, password, role } = req.body;
   try {
     const userExists = await User.findOne({ email });
-    if (userExists) return res.status(400).json({ message: 'User sudah terdaftar le' });
+    if (userExists) return res.status(400).json({ message: 'User already exist' });
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -38,7 +38,7 @@ export const registerSeller = async (req, res) => {
       role: role || 'seller',
     });
 
-    res.status(201).json({ message: 'Sukses registrasi seller', user: newUser });
+    res.status(201).json({ message: 'Successfully registered', user: newUser });
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
@@ -48,7 +48,7 @@ export const registerAdmin = async (req, res) => {
   const { name, email, password, role } = req.body;
   try {
     const userExists = await User.findOne({ email });
-    if (userExists) return res.status(400).json({ message: 'User sudah terdaftar le' });
+    if (userExists) return res.status(400).json({ message: 'User already exist' });
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -59,7 +59,7 @@ export const registerAdmin = async (req, res) => {
       role: role || 'admin',
     });
 
-    res.status(201).json({ message: 'Sukses registrasi admin', user: newUser });
+    res.status(201).json({ message: 'Successfully registered', user: newUser });
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
   }

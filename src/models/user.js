@@ -7,10 +7,10 @@ const userSchema = new mongoose.Schema({
     role: { type: String, enum: ['buyer', 'seller', 'admin'], default: 'buyer' },
     address: { type: String },
     phoneNumber: { type: String },
-    is_banned: { type: Boolean, default: false },
+    isBanned: { type: Boolean, default: false },
     googleId: { type: String, unique: true },
-    created_at: { type: Date, default: Date.now },
-    updated_at: { type: Date, default: Date.now }
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now }
 });
 
 export default mongoose.model('User', userSchema);

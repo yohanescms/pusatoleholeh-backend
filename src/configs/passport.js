@@ -1,7 +1,7 @@
 import { Strategy as LocalStrategy } from 'passport-local';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-import bcrypt from 'bcryptjs';
 import User from '../models/user.js';
+import bcrypt from 'bcryptjs';
 
 export default function (passport) {
     passport.use(
@@ -50,4 +50,4 @@ export default function (passport) {
     passport.deserializeUser((id, done) => {
       User.findById(id, (err, user) => done(err, user));
     });
-  }
+  };
