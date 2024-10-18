@@ -8,6 +8,7 @@ import shopRoutes from './routes/shop.js';
 import productRoutes from './routes/product.js';
 import userRoutes from './routes/user.js';
 import passportConfig from './configs/passport.js';
+import connectMongoDB from './configs/mongodb.js';
 
 dotenv.config();
 
@@ -26,8 +27,6 @@ app.use('/shop', shopRoutes);
 app.use('/product', productRoutes);
 app.use('/profile', userRoutes);
 
-mongoose.connect(process.env.MONGO_URI)
-.then(() => console.log('MongoDB terkonek'))
-.catch(err => console.error('MongoDB error gamau konek!', err));
+connectMongoDB();
 
 app.listen(PORT, () => console.log(`Server is up at port ${PORT}`));

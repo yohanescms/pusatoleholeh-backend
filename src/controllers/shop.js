@@ -32,7 +32,7 @@ export const updateShop = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
   }
 
-  const { shopId } = req.body;
+  const { shopId } = req.params;
   const { name, description, location } = req.body;
 
   try {
@@ -58,7 +58,7 @@ export const uploadShopImage = async (req, res) => {
       return res.status(400).json({ message: 'No image uploaded' });
   }
 
-  const { shopId } = req.body;
+  const { shopId } = req.params;
   
   try {
       const shop = await Shop.findById(shopId);
@@ -92,7 +92,7 @@ export const uploadShopBanner = async (req, res) => {
       return res.status(400).json({ message: 'No banner uploaded' });
   }
 
-  const { shopId } = req.body;
+  const { shopId } = req.params;
 
   try {
       const shop = await Shop.findById(shopId);
@@ -122,7 +122,7 @@ export const uploadShopBanner = async (req, res) => {
 };
 
 export const updateShopImage = async (req, res) => {
-  const { shopImageId, shopId } = req.body;
+  const { shopImageId, shopId } = req.params;
   if (!req.file) {
       return res.status(400).json({ message: 'No image uploaded' });
   }
@@ -159,7 +159,7 @@ export const updateShopImage = async (req, res) => {
 };
 
 export const updateShopBanner = async (req, res) => {
-  const { shopBannerId, shopId } = req.body;
+  const { shopBannerId, shopId } = req.params;
   if (!req.file) {
       return res.status(400).json({ message: 'No banner uploaded' });
   }
@@ -196,7 +196,7 @@ export const updateShopBanner = async (req, res) => {
 };
 
 export const deleteShopImage = async (req, res) => {
-  const { shopImageId, shopId } = req.body;
+  const { shopImageId, shopId } = req.params;
 
   try {
       const shop = await Shop.findById(shopId);
@@ -216,7 +216,7 @@ export const deleteShopImage = async (req, res) => {
 };
 
 export const deleteShopBanner = async (req, res) => {
-  const { shopBannerId, shopId } = req.body;
+  const { shopBannerId, shopId } = req.params;
 
   try {
       const shop = await Shop.findById(shopId);
