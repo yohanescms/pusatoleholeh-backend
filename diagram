@@ -1,4 +1,4 @@
-Table Users {
+Table User {
   _id ObjectId [pk]
   name String
   email String [unique]
@@ -12,32 +12,32 @@ Table Users {
   updatedAt Date
 }
 
-Table UserImages {
+Table UserImage {
   _id ObjectId [pk]
   name String
   path String
   url String
-  userId ObjectId [ref: - Users._id]
+  userId ObjectId [ref: - User._id]
   createdAt Date
   updatedAt Date
 }
 
-Table Shops {
+Table Shop {
   _id ObjectId [pk]
   name String
   description String
-  ownerId ObjectId [ref: > Users._id]
-  location String
+  ownerId ObjectId [ref: > User._id]
+  address Array
   createdAt Date
   updatedAt Date
 }
 
-Table ShopImages {
+Table ShopImage {
   _id ObjectId [pk]
   name String
   path String
   url String
-  shopId ObjectId [ref: - Shops._id]
+  shopId ObjectId [ref: - Shop._id]
   createdAt Date
   updatedAt Date
 }
@@ -47,17 +47,17 @@ Table ShopBanner {
   name String
   path String
   url String
-  shopId ObjectId [ref: - Shops._id]
+  shopId ObjectId [ref: - Shop._id]
   createdAt Date
   updatedAt Date
 }
 
-Table Products {
+Table Product {
   _id ObjectId [pk]
   name String
   description String
   price Number
-  shopId ObjectId [ref: > Shops._id]
+  shopId ObjectId [ref: > Shop._id]
   stock Number
   category String
   tag String
@@ -65,12 +65,12 @@ Table Products {
   updatedAt Date
 }
 
-Table ProductImages {
+Table ProductImage {
   _id ObjectId [pk]
   name String
   path String
   url String
-  productId ObjectId [ref: - Products._id]
+  productId ObjectId [ref: - Product._id]
   isPrimary Boolean
   createdAt Date
   updatedAt Date
@@ -78,8 +78,8 @@ Table ProductImages {
 
 Table ProductChat {
   _id ObjectId [pk]
-  productId ObjectId [ref: - Products._id]
-  userId ObjectId [ref: - Users._id]
+  productId ObjectId [ref: - Product._id]
+  userId ObjectId [ref: - User._id]
   message String
   createdAt Date
   updatedAt Date

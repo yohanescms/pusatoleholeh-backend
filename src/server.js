@@ -1,5 +1,4 @@
 import express from 'express';
-import mongoose from 'mongoose';
 import passport from 'passport';
 import session from 'express-session';
 import dotenv from 'dotenv';

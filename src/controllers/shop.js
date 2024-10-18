@@ -15,11 +15,23 @@ export const createShop = async (req, res) => {
   }
 
   try {
-      const { name, description, location } = req.body;
+      const { name, description, province, city, district, subdistrict, postalCode } = req.body;
       const ownerId = req.user._id;
 
-      const shop = new Shop({ name, description, location, ownerId });
-      await shop.save();
+      const shop = new Shop({ 
+        name, 
+        description, 
+        ownerId,
+        address: {
+          province,
+          city,
+          district,
+          subdistrict,
+          postalCode
+        }
+      });
+
+      await shop.save();    
 
       res.status(201).json({ message: 'Shop created successfully', shop });
   } catch (err) {
@@ -34,7 +46,7 @@ export const updateShop = async (req, res) => {
   }
 
   const { shopId } = req.params;
-  const { name, description, location } = req.body;
+  const { name, description, province, city, district, subdistrict, postalCode } = req.body;
 
   try {
       const shop = await Shop.findById(shopId);
@@ -45,7 +57,12 @@ export const updateShop = async (req, res) => {
 
       shop.name = name || shop.name;
       shop.description = description || shop.description;
-      shop.location = location || shop.location;
+      shop.address.province = province || shop.address.province;
+      shop.address.city = city || shop.address.city;
+      shop.address.district = district || shop.address.district;
+      shop.address.subdistrict = subdistrict || shop.address.subdistrict;
+      shop.address.postalCode = postalCode || shop.address.postalCode;
+
       await shop.save();
 
       res.status(200).json({ message: 'Shop updated successfully', shop });
