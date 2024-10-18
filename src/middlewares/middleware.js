@@ -31,10 +31,19 @@ export const verifyRole = (...allowedRoles) => (req, res, next) => {
 
 export const checkShopOwner = async (req, res, next) => {
     const { shopId } = req.body;
-    const shop = await Shop.findById(shopId);
 
-    if (!shop || String(shop.ownerId) !== req.user._id.toString()) {
-        return res.status(403).json({ message: 'You do not have permission to modify this shop\'s products.' });
+    try {
+        const shop = await Shop.findById(shopId);
+        if (!shop) {
+            return res.status(404).json({ message: 'Shop not found.' });
+        }
+
+        if (String(shop.ownerId) !== String(req.user._id)) {
+            return res.status(403).json({ message: 'You do not have permission to modify this shop.' });
+        }
+
+        next();
+    } catch (err) {
+        res.status(500).json({ message: 'Server error', error: err.message });
     }
-    next();
 };
