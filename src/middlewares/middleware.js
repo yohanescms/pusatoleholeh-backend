@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/user.js';
+import Shop from '../models/shop.js';
 
 export const safeRoute = async (req, res, next) => {
     let token;
@@ -30,7 +31,7 @@ export const verifyRole = (...allowedRoles) => (req, res, next) => {
 };
 
 export const checkShopOwner = async (req, res, next) => {
-    const { shopId } = req.body;
+    const { shopId } = req.params;
 
     try {
         const shop = await Shop.findById(shopId);

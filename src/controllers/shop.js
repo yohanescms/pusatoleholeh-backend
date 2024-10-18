@@ -234,3 +234,14 @@ export const deleteShopBanner = async (req, res) => {
       res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
+
+/// DEBUG
+
+export const getAllShops = async (req, res) => {
+  try {
+    const shops = await Shop.find();
+    res.status(200).json({ message: 'Shops retrieved successfully', shops });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
