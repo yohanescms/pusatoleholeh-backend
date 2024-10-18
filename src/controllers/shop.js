@@ -4,6 +4,7 @@ import ShopBanner from '../models/shopBanner.js';
 import { validationResult } from 'express-validator';
 import sharp from 'sharp';
 import path from 'path';
+import fs from 'fs';
 import encodeFileName from '../configs/crypto.js';
 import ensureUploadPathExists from '../configs/fs.js'
 
@@ -208,7 +209,8 @@ export const deleteShopImage = async (req, res) => {
           fs.unlinkSync(shopImage.path);
       }
 
-      await shopImage.remove();
+      await ShopImage.deleteOne({ _id: shopImageId });
+
       res.status(200).json({ message: 'Shop image deleted successfully' });
   } catch (err) {
       res.status(500).json({ message: 'Server error', error: err.message });
@@ -228,7 +230,8 @@ export const deleteShopBanner = async (req, res) => {
           fs.unlinkSync(shopBanner.path);
       }
 
-      await shopBanner.remove();
+      await ShopImage.deleteOne({ _id: shopBannerId });
+
       res.status(200).json({ message: 'Shop banner deleted successfully' });
   } catch (err) {
       res.status(500).json({ message: 'Server error', error: err.message });
@@ -245,3 +248,23 @@ export const getAllShops = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
+
+export const getShopById = async (req, res) => {
+  const { shopId } = req.params
+
+  try {
+    const shop = await Shop.findById(shopId)
+      .populate('ownerId', 'name');
+      
+    const shopImage = await ShopImage.find({ shopId: shop._id });
+    const shopBanner = await ShopBanner.find({ shopId: shop._id });
+
+    if (!shop) {
+      return res.status(404).json({message: 'Shop not found'});
+    }
+
+    res.status(200).json({message: 'Shop found!', shop, image: shopImage, banner: shopBanner });
+  } catch (err) {
+    res.status(500).json({message: 'Server error', error: err.message });
+  }
+}

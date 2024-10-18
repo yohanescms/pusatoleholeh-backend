@@ -1,5 +1,5 @@
 import express from 'express';
-import { createShop, updateShop, uploadShopImage, uploadShopBanner, updateShopImage, updateShopBanner, deleteShopImage, deleteShopBanner, getAllShops } from '../controllers/shop.js';
+import { createShop, updateShop, uploadShopImage, uploadShopBanner, updateShopImage, updateShopBanner, deleteShopImage, deleteShopBanner, getAllShops, getShopById } from '../controllers/shop.js';
 import { safeRoute, verifyRole, checkShopOwner } from '../middlewares/middleware.js';
 import upload from '../configs/multer.js';
 import { validateShopCreation, validateShopUpdate } from '../configs/validate.js';
@@ -21,5 +21,7 @@ router.delete('/delete/:shopId/:shopBannerId', safeRoute, verifyRole('seller'), 
 // DEBUG
 
 router.get('/', getAllShops);
+router.get('/:shopId', getShopById);
+
 
 export default router;
