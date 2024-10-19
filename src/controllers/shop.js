@@ -53,7 +53,8 @@ export const updateShop = async (req, res) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { shopId } = req.params;
+  const ownerId = req.user._id;
+
   const {
     name,
     description,
@@ -65,7 +66,7 @@ export const updateShop = async (req, res) => {
   } = req.body;
 
   try {
-    const shop = await Shop.findById(shopId);
+    const shop = await Shop.findOne({ ownerId });
 
     if (!shop) {
       return res.status(404).json({ message: "Shop not found" });
@@ -92,10 +93,10 @@ export const uploadShopImage = async (req, res) => {
     return res.status(400).json({ message: "No image uploaded" });
   }
 
-  const { shopId } = req.params;
+  const ownerId = req.user._id;
 
   try {
-    const shop = await Shop.findById(shopId);
+    const shop = await Shop.findOne({ ownerId });
 
     const filename = encodeFileName(req.file.originalname, "shop");
     const uploadPath = path.join(process.env.SHOP_UPLOAD_PATH);
@@ -109,7 +110,7 @@ export const uploadShopImage = async (req, res) => {
       name: req.file.originalname,
       path: outputPath,
       url: `${process.env.SHOP_UPLOAD_URL}/${filename}`,
-      shopId,
+      shopId: shop._id,
     });
     await shopImage.save();
 
@@ -124,10 +125,10 @@ export const uploadShopBanner = async (req, res) => {
     return res.status(400).json({ message: "No banner uploaded" });
   }
 
-  const { shopId } = req.params;
+  const ownerId = req.user._id;
 
   try {
-    const shop = await Shop.findById(shopId);
+    const shop = await Shop.findOne({ ownerId });
 
     const filename = encodeFileName(req.file.originalname, "banner");
     const uploadPath = path.join(process.env.SHOP_UPLOAD_PATH);
@@ -141,7 +142,7 @@ export const uploadShopBanner = async (req, res) => {
       name: req.file.originalname,
       path: outputPath,
       url: `${process.env.SHOP_UPLOAD_URL}/${filename}`,
-      shopId,
+      shopId: shop._id,
     });
     await shopBanner.save();
 
@@ -154,15 +155,18 @@ export const uploadShopBanner = async (req, res) => {
 };
 
 export const updateShopImage = async (req, res) => {
-  const { shopImageId, shopId } = req.params;
+
+  const ownerId = req.user._id;
+
   if (!req.file) {
     return res.status(400).json({ message: "No image uploaded" });
   }
 
   try {
-    const shop = await Shop.findById(shopId);
 
-    const shopImage = await ShopImage.findById(shopImageId);
+    const shop = await Shop.findOne({ ownerId });
+    const shopImage = await ShopImage.findOne({ shopId: shop._id });
+
     if (!shopImage)
       return res.status(404).json({ message: "Shop image not found." });
 
@@ -192,15 +196,18 @@ export const updateShopImage = async (req, res) => {
 };
 
 export const updateShopBanner = async (req, res) => {
-  const { shopBannerId, shopId } = req.params;
+
+  const ownerId = req.user._id;
+
   if (!req.file) {
     return res.status(400).json({ message: "No banner uploaded" });
   }
 
   try {
-    const shop = await Shop.findById(shopId);
 
-    const shopBanner = await ShopBanner.findById(shopBannerId);
+    const shop = await Shop.findOne({ ownerId });
+    const shopBanner = await ShopBanner.findOne({ shopId: shop._id });
+
     if (!shopBanner)
       return res.status(404).json({ message: "Shop banner not found." });
 
@@ -230,12 +237,14 @@ export const updateShopBanner = async (req, res) => {
 };
 
 export const deleteShopImage = async (req, res) => {
-  const { shopImageId, shopId } = req.params;
+  
+  const ownerId = req.user._id;
 
   try {
-    const shop = await Shop.findById(shopId);
 
-    const shopImage = await ShopImage.findById(shopImageId);
+    const shop = await Shop.findOne({ ownerId });
+    const shopImage = await ShopImage.findOne({ shopId: shop._id });
+
     if (!shopImage)
       return res.status(404).json({ message: "Shop image not found." });
 
@@ -243,7 +252,7 @@ export const deleteShopImage = async (req, res) => {
       fs.unlinkSync(shopImage.path);
     }
 
-    await ShopImage.deleteOne({ _id: shopImageId });
+    await ShopImage.deleteOne({ _id: shopImage._id });
 
     res.status(200).json({ message: "Shop image deleted successfully" });
   } catch (err) {
@@ -252,12 +261,14 @@ export const deleteShopImage = async (req, res) => {
 };
 
 export const deleteShopBanner = async (req, res) => {
-  const { shopBannerId, shopId } = req.params;
+  
+  const ownerId = req.user._id;
 
   try {
-    const shop = await Shop.findById(shopId);
 
-    const shopBanner = await ShopBanner.findById(shopBannerId);
+    const shop = await Shop.findOne({ ownerId });
+    const shopBanner = await ShopBanner.findOne({ shopId: shop._id });
+
     if (!shopBanner)
       return res.status(404).json({ message: "Shop banner not found." });
 
@@ -265,7 +276,7 @@ export const deleteShopBanner = async (req, res) => {
       fs.unlinkSync(shopBanner.path);
     }
 
-    await ShopImage.deleteOne({ _id: shopBannerId });
+    await ShopImage.deleteOne({ _id: shopBanner._id });
 
     res.status(200).json({ message: "Shop banner deleted successfully" });
   } catch (err) {

@@ -1,103 +1,189 @@
 import User from '../models/user.js';
 import UserImage from '../models/userImage.js';
-import multer from 'multer';
-import fs from 'fs';
-import sharp from 'sharp';
-import path from 'path';
+import { validationResult } from "express-validator";
+import sharp from "sharp";
+import path from "path";
+import fs from "fs";
+import { encodeFileName } from "../configs/crypto.js";
+import { uploadPathCheck } from "../configs/fs.js";
 
-const storage = multer.memoryStorage();
-const upload = multer({
-  storage,
-  limits: { fileSize: 4 * 1024 * 1024 },
-  fileFilter(req, file, cb) {
-    if (!file.mimetype.startsWith('image/')) {
-      return cb(new Error('Please upload an image'));
-    }
-    cb(null, true);
-  },
-}).single('profilePicture');
+export const updateUser = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
 
-const saveAsWebp = async (file, uploadPath) => {
-  const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-  const webpFilename = `${uniqueSuffix}.webp`;
-  const webpFilePath = path.join(uploadPath, webpFilename);
+  const userId = req.user._id;
+  const {
+    name,
+    phoneNumber,
+    province,
+    city,
+    district,
+    subdistrict,
+    postalCode,
+  } = req.body;
 
-  fs.mkdirSync(uploadPath, { recursive: true });
-
-  await sharp(file.buffer)
-    .webp({ quality: 80 })
-    .toFile(webpFilePath);
-
-  return {
-    filename: webpFilename,
-    path: webpFilePath,
-    url: `${uploadPath}/${webpFilename}`,
-  };
-};
-
-export const updateUserProfile = async (req, res) => {
   try {
-    await new Promise((resolve, reject) => {
-      upload(req, res, (err) => (err ? reject(err) : resolve()));
-    });
-
-    const userId = req.user._id;
-    const { name, address, phoneNumber } = req.body;
-
     const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    if (!user) {
+      return res.status(404).json({ message: "Invalid User" });
+    }
 
     user.name = name || user.name;
-    user.address = address || user.address;
     user.phoneNumber = phoneNumber || user.phoneNumber;
+    user.address.province = province || user.address.province;
+    user.address.city = city || user.address.city;
+    user.address.district = district || user.address.district;
+    user.address.subdistrict = subdistrict || user.address.subdistrict;
+    user.address.postalCode = postalCode || user.address.postalCode;
 
-    const uploadPath = process.env.UPLOAD_PATH || './images/users';
+    await user.save();
 
-    if (req.file) {
-      const { filename, path: filePath, url } = await saveAsWebp(req.file, uploadPath);
-
-      let userPicture = await UserImage.findOne({ UserId: userId });
-
-      if (userPicture) {
-        fs.unlink(userPicture.path, (err) => {
-          if (err) console.error(`Failed to delete old image: ${err.message}`);
-        });
-        userPicture.name = filename;
-        userPicture.path = filePath;
-        userPicture.url = `${req.protocol}://${req.get('host')}/images/users/${filename}`;
-        await userPicture.save();
-      } else {
-        userPicture = new UserImage({
-          name: filename,
-          path: filePath,
-          url: `${req.protocol}://${req.get('host')}/images/users/${filename}`,
-          UserId: userId,
-        });
-        await userPicture.save();
-      }
-    }
-
-    const updatedUser = await user.save();
-    res.status(200).json({ message: 'Profile updated successfully', user: updatedUser });
-  } catch (error) {
-    res.status(500).json({ message: 'Error updating profile', error: error.message });
+    res.status(200).json({ message: "User updated successfully", user });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
-export const getUserProfile = async (req, res) => {
+export const uploadUserImage = async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: "No image uploaded" });
+  }
+
+  const userId = req.user._id;
+
   try {
-    const userId = req.user._id;
+    const user = await User.findById(userId);
 
-    const user = await User.findById(userId).lean();
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    const filename = encodeFileName(req.file.originalname, "user");
+    const uploadPath = path.join(process.env.USER_UPLOAD_PATH);
+    uploadPathCheck(uploadPath);
 
-    const profilePicture = await UserImage.findOne({ UserId: userId });
+    const outputPath = path.join(uploadPath, filename);
+
+    await sharp(req.file.buffer).toFormat("webp").toFile(outputPath);
+
+    const userImage = new UserImage({
+      name: req.file.originalname,
+      path: outputPath,
+      url: `${process.env.USER_UPLOAD_URL}/${filename}`,
+      userId,
+    });
+    await userImage.save();
+
+    res.status(200).json({ message: "Image uploaded successfully", userImage });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+export const updateUserImage = async (req, res) => {
+
+  const userId = req.user._id
+
+  if (!req.file) {
+    return res.status(400).json({ message: "No image uploaded" });
+  }
+
+  try {
+    const user = await User.findById(userId);
+
+    const userImage = await UserImage.findOne(userId);
+    if (!userImage)
+      return res.status(404).json({ message: "User image not found." });
+
+    if (fs.existsSync(userImage.path)) {
+      fs.unlinkSync(userImage.path);
+    }
+
+    const filename = encodeFileName(req.file.originalname, "user");
+    const uploadPath = path.join(process.env.USER_UPLOAD_PATH);
+    uploadPathCheck(uploadPath);
+
+    const outputPath = path.join(uploadPath, filename);
+
+    await sharp(req.file.buffer).toFormat("webp").toFile(outputPath);
+
+    userImage.name = req.file.originalname;
+    userImage.path = outputPath;
+    userImage.url = `${process.env.USER_UPLOAD_URL}/${filename}`;
+    await userImage.save();
+
+    res
+      .status(200)
+      .json({ message: "User image updated successfully", userImage });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+export const deleteUserImage = async (req, res) => {
+
+  const userId = req.user._id
+
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    const userImage = await UserImage.findOne({ userId });
+    if (!userImage)
+      return res.status(404).json({ message: "User image not found." });
+
+    if (fs.existsSync(userImage.path)) {
+      fs.unlinkSync(userImage.path);
+    }
+
+    await UserImage.deleteOne({ _id: userImage._id });
+
+    res.status(200).json({ message: "User image deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+export const getUser = async (req, res) => {
+  
+  const userId = req.user._id;
+
+  try {
+    const user = await User.findById(userId).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: "Invalid Token." });
+    }
+
+    const userImage = await UserImage.find({ userId: userId });
 
     res.status(200).json({
-      ...user,
-      profilePicture,
+      user,
+      image: userImage ? userImage.url : null,
     });
-  } catch (error) {
-    res.status(500).json({ message: 'Error fetching user profile', error: error.message });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+export const getUserById = async (req, res) => {
+  
+  const { userId } = req.params;
+
+  try {
+    const user = await User.findById(userId).select('-password -email -_id -updatedAt');
+    if (!user) {
+      return res.status(404).json({ message: "User not Found" });
+    }
+
+    const userImage = await UserImage.find({ userId: userId });
+
+    res.status(200).json({
+      user,
+      image: userImage ? userImage.url : null,
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };

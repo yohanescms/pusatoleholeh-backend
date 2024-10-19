@@ -48,3 +48,23 @@ export const checkShopOwner = async (req, res, next) => {
         res.status(500).json({ message: 'Server error', error: err.message });
     }
 };
+
+export const checkUserOrigin = async (req, res, next) => {
+    
+    const userId = req.user._id;
+
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'Invalid User.' });
+        }
+
+        if (String(user._id) !== String(req.user._id)) {
+            return res.status(403).json({ message: 'You do not have enough permission' });
+        }
+
+        next();
+    } catch (err) {
+        res.status(500).json({ message: 'Server error', error: err.message });
+    }
+};

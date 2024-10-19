@@ -8,7 +8,8 @@ const shopSchema = new mongoose.Schema({
         province: { type: String, required: true },
         city: { type: String, required: true },
         district: { type: String, required: true },
-        subdistrict: { type: String, required: true }
+        subdistrict: { type: String, required: true },
+        postalCode: { type: Number }
     },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
