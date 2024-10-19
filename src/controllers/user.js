@@ -1,5 +1,6 @@
 import User from '../models/user.js';
 import UserImage from '../models/userImage.js';
+import Address from '../models/address.js'
 import { validationResult } from "express-validator";
 import sharp from "sharp";
 import path from "path";
@@ -17,11 +18,6 @@ export const updateUser = async (req, res) => {
   const {
     name,
     phoneNumber,
-    province,
-    city,
-    district,
-    subdistrict,
-    postalCode,
   } = req.body;
 
   try {
@@ -33,11 +29,6 @@ export const updateUser = async (req, res) => {
 
     user.name = name || user.name;
     user.phoneNumber = phoneNumber || user.phoneNumber;
-    user.address.province = province || user.address.province;
-    user.address.city = city || user.address.city;
-    user.address.district = district || user.address.district;
-    user.address.subdistrict = subdistrict || user.address.subdistrict;
-    user.address.postalCode = postalCode || user.address.postalCode;
 
     await user.save();
 
@@ -183,6 +174,74 @@ export const getUserById = async (req, res) => {
       user,
       image: userImage ? userImage.url : null,
     });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+export const addAddress = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+  const userId = req.user._id;
+  const { name, province, city, district, subdistrict, postalCode } = req.body;
+
+  try {
+    const newAddress = new Address({ name, userId, province, city, district, subdistrict, postalCode })
+    await newAddress.save();
+
+    res.status(200).json({ message: "Address successfully added."});
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: err.message});
+  }
+};
+
+export const updateAddress = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+  const userId = req.user._id;
+  const { addressId } = req.params;
+  const { name, province, city, district, subdistrict, postalCode } = req.body;
+
+  try {
+    const address = await Address.findOne({ _id: addressId, userId });
+
+    if (!address) {
+      return res.status(404).json({ message: "Address not found." });
+    }
+
+    address.name = name || address.name;
+    address.province = province || address.province;
+    address.city = city || address.city;
+    address.district = district || address.district;
+    address.subdistrict = subdistrict || address.subdistrict;
+    address.postalCode = postalCode || address.postalCode;
+
+    await address.save();
+
+    res.status(200).json({ message: "Address successfully updated."});
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: err.message});
+  }
+};
+
+export const deleteAddress = async (req, res) => {
+  const userId = req.user._id;
+  const { addressId } = req.params;
+
+  try {
+    const address = await Address.findOne({ _id: addressId, userId });
+
+    if (!address) {
+      return res.status(404).json({ message: "Address not found." });
+    }
+
+    await Address.deleteOne({ _id: addressId });
+
+    res.status(200).json({ message: "Address deleted successfully" });
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
   }

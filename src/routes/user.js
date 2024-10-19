@@ -1,5 +1,5 @@
 import express from 'express';
-import { updateUser, updateUserImage, uploadUserImage, getUser, getUserById } from '../controllers/user.js';
+import { updateUser, updateUserImage, uploadUserImage, getUser, getUserById, addAddress, updateAddress, deleteAddress } from '../controllers/user.js';
 import { safeRoute, checkUserOrigin } from '../middlewares/middleware.js';
 import { upload } from '../configs/multer.js';
 import { validateUserUpdate } from '../configs/validate.js';
@@ -13,5 +13,9 @@ router.put('/image', upload.single('image'), checkUserOrigin, safeRoute, updateU
 
 router.get('/', safeRoute, getUser);
 router.get('/:userId', safeRoute, getUserById);
+
+router.post('/address', safeRoute, checkUserOrigin, addAddress);
+router.put('/address/:addressId', safeRoute, checkUserOrigin, updateAddress);
+router.delete('/address/:addressId', safeRoute, checkUserOrigin, deleteAddress);
 
 export default router;

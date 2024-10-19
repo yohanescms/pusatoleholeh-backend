@@ -4,12 +4,22 @@ Table User {
   email String [unique]
   password String
   role String [note: "buyer, seller, admin"]
-  address String
   phoneNumber String
   isBanned boolean
   googleId varchar [unique]
   createdAt Date
   updatedAt Date
+}
+
+Table Address {
+  _id ObjectId [pk]
+  userId ObjectId [ref: - User._id]
+  title String
+  province String
+  city String
+  district String
+  subdistrict String
+  postalCode Number
 }
 
 Table UserImage {
@@ -27,7 +37,6 @@ Table Shop {
   name String
   description String
   ownerId ObjectId [ref: > User._id]
-  address Array
   createdAt Date
   updatedAt Date
 }

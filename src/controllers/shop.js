@@ -1,6 +1,7 @@
 import Shop from "../models/shop.js";
 import ShopImage from "../models/shopImage.js";
 import ShopBanner from "../models/shopBanner.js";
+import Address from "../models/address.js"
 import { validationResult } from "express-validator";
 import sharp from "sharp";
 import path from "path";
@@ -18,24 +19,25 @@ export const createShop = async (req, res) => {
     const {
       name,
       description,
-      province,
-      city,
-      district,
-      subdistrict,
-      postalCode,
+      addressId,
     } = req.body;
     const ownerId = req.user._id;
+    const shopAddress = await Address.findOne({ _id: addressId, userId: ownerId });
+
+    if (!shopAddress) {
+      return res.status(404).json({ message: "Address not found." });
+    }
 
     const shop = new Shop({
       name,
       description,
       ownerId,
       address: {
-        province,
-        city,
-        district,
-        subdistrict,
-        postalCode,
+        province: shopAddress.province,
+        city: shopAddress.city,
+        district: shopAddress.district,
+        subdistrict: shopAddress.subdistrict,
+        postalCode: shopAddress.postalCode,
       },
     });
 
@@ -284,8 +286,6 @@ export const deleteShopBanner = async (req, res) => {
   }
 };
 
-/// DEBUG
-
 export const getAllShops = async (req, res) => {
   try {
     const shops = await Shop.find();
@@ -294,8 +294,6 @@ export const getAllShops = async (req, res) => {
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };
-
-/// DEBUG END
 
 export const getShopById = async (req, res) => {
   const { shopId } = req.params;
