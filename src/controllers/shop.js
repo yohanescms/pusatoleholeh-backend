@@ -1,215 +1,231 @@
-import Shop from '../models/shop.js';
-import ShopImage from '../models/shopImage.js';
-import ShopBanner from '../models/shopBanner.js';
-import { validationResult } from 'express-validator';
-import sharp from 'sharp';
-import path from 'path';
-import fs from 'fs';
-import encodeFileName from '../configs/crypto.js';
-import ensureUploadPathExists from '../configs/fs.js'
+import Shop from "../models/shop.js";
+import ShopImage from "../models/shopImage.js";
+import ShopBanner from "../models/shopBanner.js";
+import { validationResult } from "express-validator";
+import sharp from "sharp";
+import path from "path";
+import fs from "fs";
+import { encodeFileName } from "../configs/crypto.js";
+import { uploadPathCheck } from "../configs/fs.js";
 
 export const createShop = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+    return res.status(400).json({ errors: errors.array() });
   }
 
   try {
-      const { name, description, province, city, district, subdistrict, postalCode } = req.body;
-      const ownerId = req.user._id;
+    const {
+      name,
+      description,
+      province,
+      city,
+      district,
+      subdistrict,
+      postalCode,
+    } = req.body;
+    const ownerId = req.user._id;
 
-      const shop = new Shop({ 
-        name, 
-        description, 
-        ownerId,
-        address: {
-          province,
-          city,
-          district,
-          subdistrict,
-          postalCode
-        }
-      });
+    const shop = new Shop({
+      name,
+      description,
+      ownerId,
+      address: {
+        province,
+        city,
+        district,
+        subdistrict,
+        postalCode,
+      },
+    });
 
-      await shop.save();    
+    await shop.save();
 
-      res.status(201).json({ message: 'Shop created successfully', shop });
+    res.status(201).json({ message: "Shop created successfully", shop });
   } catch (err) {
-      res.status(500).json({ message: 'Server error', error: err.message });
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
 export const updateShop = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+    return res.status(400).json({ errors: errors.array() });
   }
 
   const { shopId } = req.params;
-  const { name, description, province, city, district, subdistrict, postalCode } = req.body;
+  const {
+    name,
+    description,
+    province,
+    city,
+    district,
+    subdistrict,
+    postalCode,
+  } = req.body;
 
   try {
-      const shop = await Shop.findById(shopId);
+    const shop = await Shop.findById(shopId);
 
-      if (!shop) {
-          return res.status(404).json({ message: 'Shop not found' });
-      }
+    if (!shop) {
+      return res.status(404).json({ message: "Shop not found" });
+    }
 
-      shop.name = name || shop.name;
-      shop.description = description || shop.description;
-      shop.address.province = province || shop.address.province;
-      shop.address.city = city || shop.address.city;
-      shop.address.district = district || shop.address.district;
-      shop.address.subdistrict = subdistrict || shop.address.subdistrict;
-      shop.address.postalCode = postalCode || shop.address.postalCode;
+    shop.name = name || shop.name;
+    shop.description = description || shop.description;
+    shop.address.province = province || shop.address.province;
+    shop.address.city = city || shop.address.city;
+    shop.address.district = district || shop.address.district;
+    shop.address.subdistrict = subdistrict || shop.address.subdistrict;
+    shop.address.postalCode = postalCode || shop.address.postalCode;
 
-      await shop.save();
+    await shop.save();
 
-      res.status(200).json({ message: 'Shop updated successfully', shop });
+    res.status(200).json({ message: "Shop updated successfully", shop });
   } catch (err) {
-      res.status(500).json({ message: 'Server error', error: err.message });
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
 export const uploadShopImage = async (req, res) => {
   if (!req.file) {
-      return res.status(400).json({ message: 'No image uploaded' });
+    return res.status(400).json({ message: "No image uploaded" });
   }
 
   const { shopId } = req.params;
-  
+
   try {
-      const shop = await Shop.findById(shopId);
+    const shop = await Shop.findById(shopId);
 
-      const filename = encodeFileName(req.file.originalname, 'shop');
-      const uploadPath = path.join(process.env.SHOP_UPLOAD_PATH);
-      ensureUploadPathExists(uploadPath);
+    const filename = encodeFileName(req.file.originalname, "shop");
+    const uploadPath = path.join(process.env.SHOP_UPLOAD_PATH);
+    uploadPathCheck(uploadPath);
 
-      const outputPath = path.join(uploadPath, filename);
+    const outputPath = path.join(uploadPath, filename);
 
-      await sharp(req.file.buffer)
-          .toFormat('webp')
-          .toFile(outputPath);
+    await sharp(req.file.buffer).toFormat("webp").toFile(outputPath);
 
-      const shopImage = new ShopImage({
-          name: req.file.originalname,
-          path: outputPath,
-          url: `${process.env.SHOP_UPLOAD_URL}/${filename}`,
-          shopId
-      });
-      await shopImage.save();
+    const shopImage = new ShopImage({
+      name: req.file.originalname,
+      path: outputPath,
+      url: `${process.env.SHOP_UPLOAD_URL}/${filename}`,
+      shopId,
+    });
+    await shopImage.save();
 
-      res.status(200).json({ message: 'Image uploaded successfully', shopImage });
+    res.status(200).json({ message: "Image uploaded successfully", shopImage });
   } catch (err) {
-      res.status(500).json({ message: 'Server error', error: err.message });
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
 export const uploadShopBanner = async (req, res) => {
   if (!req.file) {
-      return res.status(400).json({ message: 'No banner uploaded' });
+    return res.status(400).json({ message: "No banner uploaded" });
   }
 
   const { shopId } = req.params;
 
   try {
-      const shop = await Shop.findById(shopId);
+    const shop = await Shop.findById(shopId);
 
-      const filename = encodeFileName(req.file.originalname, 'banner');
-      const uploadPath = path.join(process.env.SHOP_UPLOAD_PATH);
-      ensureUploadPathExists(uploadPath);
+    const filename = encodeFileName(req.file.originalname, "banner");
+    const uploadPath = path.join(process.env.SHOP_UPLOAD_PATH);
+    uploadPathCheck(uploadPath);
 
-      const outputPath = path.join(uploadPath, filename);
+    const outputPath = path.join(uploadPath, filename);
 
-      await sharp(req.file.buffer)
-          .toFormat('webp')
-          .toFile(outputPath);
+    await sharp(req.file.buffer).toFormat("webp").toFile(outputPath);
 
-      const shopBanner = new ShopBanner({
-          name: req.file.originalname,
-          path: outputPath,
-          url: `${process.env.SHOP_UPLOAD_URL}/${filename}`,
-          shopId
-      });
-      await shopBanner.save();
+    const shopBanner = new ShopBanner({
+      name: req.file.originalname,
+      path: outputPath,
+      url: `${process.env.SHOP_UPLOAD_URL}/${filename}`,
+      shopId,
+    });
+    await shopBanner.save();
 
-      res.status(200).json({ message: 'Banner uploaded successfully', shopBanner });
+    res
+      .status(200)
+      .json({ message: "Banner uploaded successfully", shopBanner });
   } catch (err) {
-      res.status(500).json({ message: 'Server error', error: err.message });
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
 export const updateShopImage = async (req, res) => {
   const { shopImageId, shopId } = req.params;
   if (!req.file) {
-      return res.status(400).json({ message: 'No image uploaded' });
+    return res.status(400).json({ message: "No image uploaded" });
   }
 
   try {
-      const shop = await Shop.findById(shopId);
+    const shop = await Shop.findById(shopId);
 
-      const shopImage = await ShopImage.findById(shopImageId);
-      if (!shopImage) return res.status(404).json({ message: 'Shop image not found.' });
+    const shopImage = await ShopImage.findById(shopImageId);
+    if (!shopImage)
+      return res.status(404).json({ message: "Shop image not found." });
 
-      if (fs.existsSync(shopImage.path)) {
-          fs.unlinkSync(shopImage.path);
-      }
+    if (fs.existsSync(shopImage.path)) {
+      fs.unlinkSync(shopImage.path);
+    }
 
-      const filename = encodeFileName(req.file.originalname, 'shop');
-      const uploadPath = path.join(process.env.SHOP_UPLOAD_PATH);
-      ensureUploadPathExists(uploadPath);
+    const filename = encodeFileName(req.file.originalname, "shop");
+    const uploadPath = path.join(process.env.SHOP_UPLOAD_PATH);
+    uploadPathCheck(uploadPath);
 
-      const outputPath = path.join(uploadPath, filename);
+    const outputPath = path.join(uploadPath, filename);
 
-      await sharp(req.file.buffer)
-          .toFormat('webp')
-          .toFile(outputPath);
+    await sharp(req.file.buffer).toFormat("webp").toFile(outputPath);
 
-      shopImage.name = req.file.originalname;
-      shopImage.path = outputPath;
-      shopImage.url = `${process.env.SHOP_UPLOAD_URL}/${filename}`;
-      await shopImage.save();
+    shopImage.name = req.file.originalname;
+    shopImage.path = outputPath;
+    shopImage.url = `${process.env.SHOP_UPLOAD_URL}/${filename}`;
+    await shopImage.save();
 
-      res.status(200).json({ message: 'Shop image updated successfully', shopImage });
+    res
+      .status(200)
+      .json({ message: "Shop image updated successfully", shopImage });
   } catch (err) {
-      res.status(500).json({ message: 'Server error', error: err.message });
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
 export const updateShopBanner = async (req, res) => {
   const { shopBannerId, shopId } = req.params;
   if (!req.file) {
-      return res.status(400).json({ message: 'No banner uploaded' });
+    return res.status(400).json({ message: "No banner uploaded" });
   }
 
   try {
-      const shop = await Shop.findById(shopId);
+    const shop = await Shop.findById(shopId);
 
-      const shopBanner = await ShopBanner.findById(shopBannerId);
-      if (!shopBanner) return res.status(404).json({ message: 'Shop banner not found.' });
+    const shopBanner = await ShopBanner.findById(shopBannerId);
+    if (!shopBanner)
+      return res.status(404).json({ message: "Shop banner not found." });
 
-      if (fs.existsSync(shopBanner.path)) {
-          fs.unlinkSync(shopBanner.path);
-      }
+    if (fs.existsSync(shopBanner.path)) {
+      fs.unlinkSync(shopBanner.path);
+    }
 
-      const filename = encodeFileName(req.file.originalname, 'banner');
-      const uploadPath = path.join(process.env.SHOP_UPLOAD_PATH);
-      ensureUploadPathExists(uploadPath);
+    const filename = encodeFileName(req.file.originalname, "banner");
+    const uploadPath = path.join(process.env.SHOP_UPLOAD_PATH);
+    uploadPathCheck(uploadPath);
 
-      const outputPath = path.join(uploadPath, filename);
+    const outputPath = path.join(uploadPath, filename);
 
-      await sharp(req.file.buffer)
-          .toFormat('webp')
-          .toFile(outputPath);
+    await sharp(req.file.buffer).toFormat("webp").toFile(outputPath);
 
-      shopBanner.name = req.file.originalname;
-      shopBanner.path = outputPath;
-      shopBanner.url = `${process.env.SHOP_UPLOAD_URL}/${filename}`;
-      await shopBanner.save();
+    shopBanner.name = req.file.originalname;
+    shopBanner.path = outputPath;
+    shopBanner.url = `${process.env.SHOP_UPLOAD_URL}/${filename}`;
+    await shopBanner.save();
 
-      res.status(200).json({ message: 'Shop banner updated successfully', shopBanner });
+    res
+      .status(200)
+      .json({ message: "Shop banner updated successfully", shopBanner });
   } catch (err) {
-      res.status(500).json({ message: 'Server error', error: err.message });
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
@@ -217,20 +233,21 @@ export const deleteShopImage = async (req, res) => {
   const { shopImageId, shopId } = req.params;
 
   try {
-      const shop = await Shop.findById(shopId);
+    const shop = await Shop.findById(shopId);
 
-      const shopImage = await ShopImage.findById(shopImageId);
-      if (!shopImage) return res.status(404).json({ message: 'Shop image not found.' });
+    const shopImage = await ShopImage.findById(shopImageId);
+    if (!shopImage)
+      return res.status(404).json({ message: "Shop image not found." });
 
-      if (fs.existsSync(shopImage.path)) {
-          fs.unlinkSync(shopImage.path);
-      }
+    if (fs.existsSync(shopImage.path)) {
+      fs.unlinkSync(shopImage.path);
+    }
 
-      await ShopImage.deleteOne({ _id: shopImageId });
+    await ShopImage.deleteOne({ _id: shopImageId });
 
-      res.status(200).json({ message: 'Shop image deleted successfully' });
+    res.status(200).json({ message: "Shop image deleted successfully" });
   } catch (err) {
-      res.status(500).json({ message: 'Server error', error: err.message });
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
@@ -238,20 +255,21 @@ export const deleteShopBanner = async (req, res) => {
   const { shopBannerId, shopId } = req.params;
 
   try {
-      const shop = await Shop.findById(shopId);
+    const shop = await Shop.findById(shopId);
 
-      const shopBanner = await ShopBanner.findById(shopBannerId);
-      if (!shopBanner) return res.status(404).json({ message: 'Shop banner not found.' });
+    const shopBanner = await ShopBanner.findById(shopBannerId);
+    if (!shopBanner)
+      return res.status(404).json({ message: "Shop banner not found." });
 
-      if (fs.existsSync(shopBanner.path)) {
-          fs.unlinkSync(shopBanner.path);
-      }
+    if (fs.existsSync(shopBanner.path)) {
+      fs.unlinkSync(shopBanner.path);
+    }
 
-      await ShopImage.deleteOne({ _id: shopBannerId });
+    await ShopImage.deleteOne({ _id: shopBannerId });
 
-      res.status(200).json({ message: 'Shop banner deleted successfully' });
+    res.status(200).json({ message: "Shop banner deleted successfully" });
   } catch (err) {
-      res.status(500).json({ message: 'Server error', error: err.message });
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
@@ -260,28 +278,36 @@ export const deleteShopBanner = async (req, res) => {
 export const getAllShops = async (req, res) => {
   try {
     const shops = await Shop.find();
-    res.status(200).json({ message: 'Shops retrieved successfully', shops });
+    res.status(200).json({ message: "Shops retrieved successfully", shops });
   } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
+/// DEBUG END
+
 export const getShopById = async (req, res) => {
-  const { shopId } = req.params
+  const { shopId } = req.params;
 
   try {
-    const shop = await Shop.findById(shopId)
-      .populate('ownerId', 'name');
-      
+    const shop = await Shop.findById(shopId).populate("ownerId", "name");
+
     const shopImage = await ShopImage.find({ shopId: shop._id });
     const shopBanner = await ShopBanner.find({ shopId: shop._id });
 
     if (!shop) {
-      return res.status(404).json({message: 'Shop not found'});
+      return res.status(404).json({ message: "Shop not found" });
     }
 
-    res.status(200).json({message: 'Shop found!', shop, image: shopImage, banner: shopBanner });
+    res
+      .status(200)
+      .json({
+        message: "Shop found!",
+        shop,
+        image: shopImage,
+        banner: shopBanner,
+      });
   } catch (err) {
-    res.status(500).json({message: 'Server error', error: err.message });
+    res.status(500).json({ message: "Server error", error: err.message });
   }
-}
+};

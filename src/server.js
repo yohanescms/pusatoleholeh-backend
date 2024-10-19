@@ -7,7 +7,7 @@ import shopRoutes from './routes/shop.js';
 import productRoutes from './routes/product.js';
 import userRoutes from './routes/user.js';
 import passportConfig from './configs/passport.js';
-import connectMongoDB from './configs/mongodb.js';
+import { connectMongoDB } from './configs/mongodb.js';
 
 dotenv.config();
 
