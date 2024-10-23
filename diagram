@@ -80,7 +80,16 @@ Table ProductImage {
   path String
   url String
   productId ObjectId [ref: - Product._id]
-  isPrimary Boolean
+  createdAt Date
+  updatedAt Date
+}
+
+Table ProductCover {
+  _id ObjectId [pk]
+  name String
+  path String
+  url String
+  productId ObjectId [ref: - Product._id]
   createdAt Date
   updatedAt Date
 }
