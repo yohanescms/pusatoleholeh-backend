@@ -30,12 +30,31 @@ export const verifyRole = (...allowedRoles) => (req, res, next) => {
     next();
 };
 
-export const checkShopOwner = async (req, res, next) => {
+export const checkShop = async (req, res, next) => {
     try {
         const shop = await Shop.findOne({ ownerId: req.user._id });
 
         if (!shop) {
             return res.status(404).json({ message: 'Shop not found for this user.' });
+        }
+
+        next();
+    } catch (err) {
+        res.status(500).json({ message: 'Server error', error: err.message });
+    }
+};
+
+export const checkShopOwner = async (req, res, next) => {
+    const { shopId } = req.params;
+
+    try {
+        const shop = await Shop.findById(shopId);
+        if (!shop) {
+            return res.status(404).json({ message: 'Shop not found.' });
+        }
+
+        if (String(shop.ownerId) !== String(req.user._id)) {
+            return res.status(403).json({ message: 'You do not have permission to modify this shop.' });
         }
 
         next();
@@ -61,3 +80,4 @@ export const checkUserOrigin = async (req, res, next) => {
         res.status(500).json({ message: 'Server error', error: err.message });
     }
 };
+

@@ -35,7 +35,6 @@ export const validateProductCreation = [
   body("stock")
     .isInt({ min: 0 })
     .withMessage("Stock must be a non-negative integer"),
-  body("category").notEmpty().withMessage("Product category is required"),
   body("shopId")
     .notEmpty()
     .withMessage("Shop ID is required")
@@ -60,8 +59,4 @@ export const validateProductUpdate = [
     .optional()
     .isInt({ min: 0 })
     .withMessage("Stock must be a non-negative integer"),
-  body("category")
-    .optional()
-    .notEmpty()
-    .withMessage("Product category should not be empty"),
 ];

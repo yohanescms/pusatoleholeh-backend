@@ -286,6 +286,28 @@ export const deleteShopBanner = async (req, res) => {
   }
 };
 
+export const getShopInfo = async (req, res) => {
+  try {
+    const shop = await Shop.findOne({ ownerId: req.user._id });
+
+    if (!shop) {
+      return res.status(404).json({ message: 'Shop not found for the logged-in user' });
+    }
+
+    const shopImage = await ShopImage.findOne({ shopId: shop._id }).select('url');
+    const shopBanner = await ShopBanner.findOne({ shopId: shop._id }).select('url');
+
+    res.status(200).json({
+      message: 'Shop information retrieved successfully',
+      shop,
+      shopImage: shopImage ? shopImage.url : null,
+      shopBanner: shopBanner ? shopBanner.url : null,
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
+
 export const getAllShops = async (req, res) => {
   try {
     const shops = await Shop.find();

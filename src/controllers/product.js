@@ -2,6 +2,7 @@ import Product from '../models/product.js';
 import ProductImage from '../models/productImage.js';
 import ProductCover from '../models/productCover.js';
 import Shop from '../models/shop.js';
+import Category from '../models/category.js';
 import sharp from 'sharp';
 import path from 'path';
 import fs from 'fs';
@@ -16,11 +17,16 @@ export const createProduct = async (req, res) => {
   }
 
   try {
-    const { name, description, price, stock, category } = req.body;
-    const shop = await Shop.findOne({ ownerId: req.user._id });
+    const { name, description, price, stock, categoryId } = req.body;
 
+    const shop = await Shop.findOne({ ownerId: req.user._id });
     if (!shop) {
       return res.status(404).json({ message: 'Shop not found' });
+    }
+
+    const category = await Category.findById(categoryId);
+    if (!category) {
+      return res.status(404).json({ message: 'Category not found' });
     }
 
     const product = new Product({
@@ -28,7 +34,7 @@ export const createProduct = async (req, res) => {
       description,
       price,
       stock,
-      category,
+      categoryId,
       shopId: shop._id,
     });
 
@@ -47,7 +53,7 @@ export const updateProduct = async (req, res) => {
 
   try {
     const { productId } = req.params;
-    const { name, description, price, stock, category } = req.body;
+    const { name, description, price, stock, categoryId } = req.body;
     const shop = await Shop.findOne({ ownerId: req.user._id });
 
     const product = await Product.findOne({ _id: productId, shopId: shop._id });
@@ -55,11 +61,22 @@ export const updateProduct = async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
 
+    if (!shop) {
+      return res.status(404).json({ message: 'Shop not found' });
+    }
+
+    if (categoryId) {
+      const category = await Category.findById(categoryId);
+      if (!category) {
+        return res.status(404).json({ message: 'Category not found' });
+      }
+      product.categoryId = categoryId;
+    }
+
     product.name = name || product.name;
     product.description = description || product.description;
     product.price = price || product.price;
     product.stock = stock || product.stock;
-    product.category = category || product.category;
 
     await product.save();
     res.status(200).json({ message: 'Product updated successfully', product });
@@ -80,6 +97,54 @@ export const deleteProduct = async (req, res) => {
 
     await Product.deleteOne({ _id: productId });
     res.status(200).json({ message: 'Product deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
+
+export const activateProduct = async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const shop = await Shop.findOne({ ownerId: req.user._id });
+
+    if (!shop) {
+      return res.status(404).json({ message: 'Shop not found' });
+    }
+
+    const product = await Product.findOne({ _id: productId, shopId: shop._id });
+    
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    product.isActive = true;
+    await product.save();
+
+    res.status(200).json({ message: 'Product activated successfully', product });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
+
+export const deactivateProduct = async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const shop = await Shop.findOne({ ownerId: req.user._id });
+
+    if (!shop) {
+      return res.status(404).json({ message: 'Shop not found' });
+    }
+
+    const product = await Product.findOne({ _id: productId, shopId: shop._id });
+    
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    product.isActive = false;
+    await product.save();
+
+    res.status(200).json({ message: 'Product activated successfully', product });
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
@@ -241,3 +306,40 @@ export const deleteProductCover = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
+
+export const getAllOwnedProducts = async (req, res) => {
+  try {
+    const shop = await Shop.findOne({ ownerId: req.user._id });
+
+    if (!shop) {
+      return res.status(404).json({ message: 'Shop not found for the logged-in user' });
+    }
+
+    const products = await Product.find({ shopId: shop._id })
+      .populate({
+        path: 'categoryId',
+        select: 'name description',
+      })
+      .lean();
+
+    if (!products.length) {
+      return res.status(404).json({ message: 'No products found for this shop' });
+    }
+
+    const productsWithCover = await Promise.all(
+      products.map(async (product) => {
+        const productCover = await ProductCover.findOne({ productId: product._id }).select('url');
+
+        return {
+          ...product,
+          productCover: productCover ? productCover.url : null,
+        };
+      })
+    );
+
+    res.status(200).json(productsWithCover);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
+
