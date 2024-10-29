@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema({
     role: { type: String, enum: ['buyer', 'seller', 'admin'], default: 'buyer' },
     phoneNumber: { type: String },
     isBanned: { type: Boolean, default: false },
-    googleId: { type: String, unique: true },
+    googleId: { type: String },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
 });
