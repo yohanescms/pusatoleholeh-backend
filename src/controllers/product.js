@@ -173,6 +173,8 @@ export const uploadProductImage = async (req, res) => {
 
     const filename = encodeFileName(req.file.originalname, 'product');
     const uploadPath = path.join(process.env.PRODUCT_UPLOAD_PATH);
+    const baseUrl = path.join(process.env.CDN_BASE_URL);
+
     uploadPathCheck(uploadPath);
 
     const outputPath = path.join(uploadPath, filename);
@@ -182,7 +184,7 @@ export const uploadProductImage = async (req, res) => {
     const productImage = new ProductImage({
       name: req.file.originalname,
       path: outputPath,
-      url: `${process.env.PRODUCT_UPLOAD_URL}/${filename}`,
+      url: `${baseUrl}:${process.env.CDN_PORT}/${uploadPath}/${filename}`,
       productId: product._id,
     });
 
@@ -195,7 +197,7 @@ export const uploadProductImage = async (req, res) => {
 
 export const deleteProductImage = async (req, res) => {
   try {
-    const { productId } = req.params;
+    const { productId, productImageId } = req.params;
     const shop = await Shop.findOne({ ownerId: req.user._id });
     const product = await Product.findOne({ _id: productId, shopId: shop._id });
 
@@ -208,7 +210,7 @@ export const deleteProductImage = async (req, res) => {
       fs.unlinkSync(productImage.path);
     }
 
-    await ProductImage.deleteOne({ _id: productImage._id });
+    await ProductImage.deleteOne({ _id: productImageId });
     res.status(200).json({ message: 'Product image deleted successfully' });
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
@@ -227,6 +229,8 @@ export const uploadProductCover = async (req, res) => {
 
     const filename = encodeFileName(req.file.originalname, 'cover');
     const uploadPath = path.join(process.env.PRODUCT_UPLOAD_PATH);
+    const baseUrl = path.join(process.env.CDN_BASE_URL);
+
     uploadPathCheck(uploadPath);
 
     const outputPath = path.join(uploadPath, filename);
@@ -236,7 +240,7 @@ export const uploadProductCover = async (req, res) => {
     const productCover = new ProductCover({
       name: req.file.originalname,
       path: outputPath,
-      url: `${process.env.PRODUCT_UPLOAD_URL}/${filename}`,
+      url: `${baseUrl}:${process.env.CDN_PORT}/${uploadPath}/${filename}`,
       productId: product._id,
     });
 
@@ -268,6 +272,8 @@ export const updateProductCover = async (req, res) => {
 
     const filename = encodeFileName(req.file.originalname, 'cover');
     const uploadPath = path.join(process.env.PRODUCT_UPLOAD_PATH);
+    const baseUrl = path.join(process.env.CDN_BASE_URL);
+
     uploadPathCheck(uploadPath);
 
     const outputPath = path.join(uploadPath, filename);
@@ -276,7 +282,7 @@ export const updateProductCover = async (req, res) => {
 
     productCover.name = req.file.originalname;
     productCover.path = outputPath;
-    productCover.url = `${process.env.PRODUCT_UPLOAD_URL}/${filename}`;
+    productCover.url = `${baseUrl}:${process.env.CDN_PORT}/${uploadPath}/${filename}`;
     await productCover.save();
 
     res.status(200).json({ message: 'Product cover updated successfully', productCover });

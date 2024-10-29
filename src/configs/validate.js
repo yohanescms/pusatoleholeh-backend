@@ -1,4 +1,4 @@
-import { body } from "express-validator";
+import { body, param } from "express-validator";
 
 export const validateShopCreation = [
   body("name").notEmpty().withMessage("Shop name is required"),
@@ -59,4 +59,19 @@ export const validateProductUpdate = [
     .optional()
     .isInt({ min: 0 })
     .withMessage("Stock must be a non-negative integer"),
+];
+
+export const validateCategoryId = [
+  param('categoryId').isMongoId().withMessage('Invalid category ID')
+];
+
+export const validateAddCategory = [
+  body('name').notEmpty().withMessage('Name is required'),
+  body('description').notEmpty().withMessage('Description is required')
+];
+
+export const validateUpdateCategory = [
+  param('categoryId').isMongoId().withMessage('Invalid category ID'),
+  body('name').optional().notEmpty().withMessage('Name cannot be empty'),
+  body('description').optional().notEmpty().withMessage('Description cannot be empty')
 ];

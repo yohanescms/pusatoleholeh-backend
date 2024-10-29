@@ -102,6 +102,8 @@ export const uploadShopImage = async (req, res) => {
 
     const filename = encodeFileName(req.file.originalname, 'shop');
     const uploadPath = path.join(process.env.SHOP_UPLOAD_PATH);
+    const baseUrl = path.join(process.env.CDN_BASE_URL);
+
     uploadPathCheck(uploadPath);
 
     const outputPath = path.join(uploadPath, filename);
@@ -111,7 +113,7 @@ export const uploadShopImage = async (req, res) => {
     const shopImage = new ShopImage({
       name: req.file.originalname,
       path: outputPath,
-      url: `${process.env.SHOP_UPLOAD_URL}/${filename}`,
+      url: `${baseUrl}:${process.env.CDN_PORT}/${uploadPath}/${filename}`,
       shopId: shop._id,
     });
     await shopImage.save();
@@ -134,6 +136,8 @@ export const uploadShopBanner = async (req, res) => {
 
     const filename = encodeFileName(req.file.originalname, 'banner');
     const uploadPath = path.join(process.env.SHOP_UPLOAD_PATH);
+    const baseUrl = path.join(process.env.CDN_BASE_URL);
+
     uploadPathCheck(uploadPath);
 
     const outputPath = path.join(uploadPath, filename);
@@ -143,7 +147,7 @@ export const uploadShopBanner = async (req, res) => {
     const shopBanner = new ShopBanner({
       name: req.file.originalname,
       path: outputPath,
-      url: `${process.env.SHOP_UPLOAD_URL}/${filename}`,
+      url: `${baseUrl}:${process.env.CDN_PORT}/${uploadPath}/${filename}`,
       shopId: shop._id,
     });
     await shopBanner.save();
@@ -178,6 +182,8 @@ export const updateShopImage = async (req, res) => {
 
     const filename = encodeFileName(req.file.originalname, 'shop');
     const uploadPath = path.join(process.env.SHOP_UPLOAD_PATH);
+    const baseUrl = path.join(process.env.CDN_BASE_URL);
+
     uploadPathCheck(uploadPath);
 
     const outputPath = path.join(uploadPath, filename);
@@ -186,7 +192,7 @@ export const updateShopImage = async (req, res) => {
 
     shopImage.name = req.file.originalname;
     shopImage.path = outputPath;
-    shopImage.url = `${process.env.SHOP_UPLOAD_URL}/${filename}`;
+    shopImage.url = `${baseUrl}:${process.env.CDN_PORT}/${uploadPath}/${filename}`;
     await shopImage.save();
 
     res
@@ -219,6 +225,8 @@ export const updateShopBanner = async (req, res) => {
 
     const filename = encodeFileName(req.file.originalname, 'banner');
     const uploadPath = path.join(process.env.SHOP_UPLOAD_PATH);
+    const baseUrl = path.join(process.env.CDN_BASE_URL);
+
     uploadPathCheck(uploadPath);
 
     const outputPath = path.join(uploadPath, filename);
@@ -227,7 +235,7 @@ export const updateShopBanner = async (req, res) => {
 
     shopBanner.name = req.file.originalname;
     shopBanner.path = outputPath;
-    shopBanner.url = `${process.env.SHOP_UPLOAD_URL}/${filename}`;
+    shopBanner.url = `${baseUrl}:${process.env.CDN_PORT}/${uploadPath}/${filename}`;
     await shopBanner.save();
 
     res

@@ -28,7 +28,7 @@ router.put('/activate/:productId', safeRoute, verifyRole('seller'), checkShop, a
 router.put('/deactivate/:productId', safeRoute, verifyRole('seller'), checkShop, deactivateProduct);
 
 router.post('/upload/image/:productId', safeRoute, verifyRole('seller'), checkShop, upload.array('images', 5), uploadProductImage);
-router.delete('/delete/image/:productId', safeRoute, verifyRole('seller'), checkShop, deleteProductImage);
+router.delete('/delete/image/:productId/:productImageId', safeRoute, verifyRole('seller'), checkShop, deleteProductImage);
 
 router.post('/upload/cover/:productId', safeRoute, verifyRole('seller'), checkShop, upload.single('cover'), uploadProductCover);
 router.put('/update/cover/:productId', safeRoute, verifyRole('seller'), checkShop, upload.single('cover'), updateProductCover);

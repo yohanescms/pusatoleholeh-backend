@@ -7,12 +7,23 @@ import shopRoutes from './routes/shop.js';
 import productRoutes from './routes/product.js';
 import userRoutes from './routes/user.js';
 import passportConfig from './configs/passport.js';
+import path from 'path';
 import { connectMongoDB } from './configs/mongodb.js';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const cdn = express();
+
+const API_PORT = process.env.API_PORT;
+const CDN_PORT = process.env.CDN_PORT;
+
+const API_URL = process.env.API_BASE_URL;
+const CDN_URL = process.env.CDN_BASE_URL;
 
 passportConfig(passport);
 
@@ -22,10 +33,13 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/auth', authRoutes);
-app.use('/shop', shopRoutes);
 app.use('/product', productRoutes);
-app.use('/profile', userRoutes);
+app.use('/shop', shopRoutes);
+app.use('/user', userRoutes);
 
 connectMongoDB();
 
-app.listen(PORT, () => console.log(`Server is up at port ${PORT}`));
+cdn.use(express.static(path.join(__dirname, '../')));
+
+cdn.listen(CDN_PORT, () => console.log(`File served at ${CDN_URL}:${CDN_PORT}`));
+app.listen(API_PORT, () => console.log(`Server is up at ${API_URL}:${API_PORT}`));

@@ -50,6 +50,8 @@ export const uploadUserImage = async (req, res) => {
 
     const filename = encodeFileName(req.file.originalname, 'user');
     const uploadPath = path.join(process.env.USER_UPLOAD_PATH);
+    const baseUrl = path.join(process.env.CDN_BASE_URL);
+
     uploadPathCheck(uploadPath);
 
     const outputPath = path.join(uploadPath, filename);
@@ -59,7 +61,7 @@ export const uploadUserImage = async (req, res) => {
     const userImage = new UserImage({
       name: req.file.originalname,
       path: outputPath,
-      url: `${process.env.USER_UPLOAD_URL}/${filename}`,
+      url: `${baseUrl}:${process.env.CDN_PORT}/${uploadPath}/${filename}`,
       userId,
     });
     await userImage.save();
@@ -91,6 +93,8 @@ export const updateUserImage = async (req, res) => {
 
     const filename = encodeFileName(req.file.originalname, 'user');
     const uploadPath = path.join(process.env.USER_UPLOAD_PATH);
+    const baseUrl = path.join(process.env.CDN_BASE_URL);
+
     uploadPathCheck(uploadPath);
 
     const outputPath = path.join(uploadPath, filename);
@@ -99,7 +103,7 @@ export const updateUserImage = async (req, res) => {
 
     userImage.name = req.file.originalname;
     userImage.path = outputPath;
-    userImage.url = `${process.env.USER_UPLOAD_URL}/${filename}`;
+    userImage.url = `${baseUrl}:${process.env.CDN_PORT}/${uploadPath}/${filename}`;
     await userImage.save();
 
     res
