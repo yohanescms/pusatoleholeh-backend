@@ -11,20 +11,20 @@ const router = express.Router();
 router.post('/create', safeRoute, verifyRole('seller'), validateShopCreation, createShop);
 router.put('/update', safeRoute, verifyRole('seller'), checkShop, validateShopUpdate, updateShop);
 
-router.post('/upload/logo', safeRoute, verifyRole('seller'), checkShop, upload.single('image'), uploadShopImage);
-router.post('/upload/banner', safeRoute, verifyRole('seller'), checkShop, upload.single('banner'), uploadShopBanner);
+router.post('/logo', safeRoute, verifyRole('seller'), checkShop, upload.single('image'), uploadShopImage);
+router.post('/banner', safeRoute, verifyRole('seller'), checkShop, upload.single('banner'), uploadShopBanner);
 
-router.put('/update/logo', safeRoute, verifyRole('seller'), checkShop, upload.single('image'), updateShopImage);
-router.put('/update/banner', safeRoute, verifyRole('seller'), checkShop, upload.single('banner'), updateShopBanner);
+router.put('/logo', safeRoute, verifyRole('seller'), checkShop, upload.single('image'), updateShopImage);
+router.put('/banner', safeRoute, verifyRole('seller'), checkShop, upload.single('banner'), updateShopBanner);
 
-router.delete('/delete/logo', safeRoute, verifyRole('seller'), checkShop, deleteShopImage);
-router.delete('/delete/banner', safeRoute, verifyRole('seller'), checkShop, deleteShopBanner);
+router.delete('/logo', safeRoute, verifyRole('seller'), checkShop, deleteShopImage);
+router.delete('/banner', safeRoute, verifyRole('seller'), checkShop, deleteShopBanner);
 
-router.get('/getdata', safeRoute, verifyRole('seller'), checkShop, getShopInfo);
+router.get('/', safeRoute, verifyRole('seller'), checkShop, getShopInfo);
 
 // BUYER ROUTES
 
-router.get('/', getAllShops);
+router.get('/all', getAllShops);
 router.get('/:shopId', getShopById);
 
 

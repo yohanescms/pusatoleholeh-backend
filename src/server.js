@@ -6,6 +6,7 @@ import authRoutes from './routes/auth.js';
 import shopRoutes from './routes/shop.js';
 import productRoutes from './routes/product.js';
 import userRoutes from './routes/user.js';
+import categoryRoutes from './routes/category.js'
 import passportConfig from './configs/passport.js';
 import path from 'path';
 import { connectMongoDB } from './configs/mongodb.js';
@@ -33,6 +34,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/auth', authRoutes);
+app.use('/category', categoryRoutes);
 app.use('/product', productRoutes);
 app.use('/shop', shopRoutes);
 app.use('/user', userRoutes);

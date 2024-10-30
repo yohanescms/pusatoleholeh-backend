@@ -35,11 +35,6 @@ export const validateProductCreation = [
   body("stock")
     .isInt({ min: 0 })
     .withMessage("Stock must be a non-negative integer"),
-  body("shopId")
-    .notEmpty()
-    .withMessage("Shop ID is required")
-    .isMongoId()
-    .withMessage("Invalid Shop ID"),
 ];
 
 export const validateProductUpdate = [

@@ -286,7 +286,7 @@ export const deleteShopBanner = async (req, res) => {
       fs.unlinkSync(shopBanner.path);
     }
 
-    await ShopImage.deleteOne({ _id: shopBanner._id });
+    await ShopBanner.deleteOne({ _id: shopBanner._id });
 
     res.status(200).json({ message: 'Shop banner deleted successfully' });
   } catch (err) {

@@ -24,7 +24,7 @@ export const registerUser = async (req, res) => {
 };
 
 export const registerSeller = async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password } = req.body;
   try {
     const userExists = await User.findOne({ email });
     if (userExists) return res.status(400).json({ message: 'User already exist' });
@@ -35,7 +35,7 @@ export const registerSeller = async (req, res) => {
       name,
       email,
       password: hashedPassword,
-      role: role || 'seller',
+      role: 'seller',
     });
 
     res.status(201).json({ message: 'Successfully registered', user: newUser });
@@ -45,7 +45,7 @@ export const registerSeller = async (req, res) => {
 };
 
 export const registerAdmin = async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password } = req.body;
   try {
     const userExists = await User.findOne({ email });
     if (userExists) return res.status(400).json({ message: 'User already exist' });
@@ -56,7 +56,7 @@ export const registerAdmin = async (req, res) => {
       name,
       email,
       password: hashedPassword,
-      role: role || 'admin',
+      role: 'admin',
     });
 
     res.status(201).json({ message: 'Successfully registered', user: newUser });

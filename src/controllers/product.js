@@ -151,7 +151,7 @@ export const deactivateProduct = async (req, res) => {
 };
 
 export const uploadProductImage = async (req, res) => {
-  if (!req.file) {
+  if (!req.files || req.files.length === 0) {
     return res.status(400).json({ message: 'No image uploaded' });
   }
 
@@ -171,25 +171,31 @@ export const uploadProductImage = async (req, res) => {
       return res.status(400).json({ message: 'Cannot upload more than 5 images for a product' });
     }
 
-    const filename = encodeFileName(req.file.originalname, 'product');
     const uploadPath = path.join(process.env.PRODUCT_UPLOAD_PATH);
     const baseUrl = path.join(process.env.CDN_BASE_URL);
 
     uploadPathCheck(uploadPath);
 
-    const outputPath = path.join(uploadPath, filename);
+    const uploadedImages = [];
+    
+    for (const file of req.files) {
+      const filename = encodeFileName(file.originalname, 'product');
+      const outputPath = path.join(uploadPath, filename);
 
-    await sharp(req.file.buffer).toFormat('webp').toFile(outputPath);
+      await sharp(file.buffer).toFormat('webp').toFile(outputPath);
 
-    const productImage = new ProductImage({
-      name: req.file.originalname,
-      path: outputPath,
-      url: `${baseUrl}:${process.env.CDN_PORT}/${uploadPath}/${filename}`,
-      productId: product._id,
-    });
+      const productImage = new ProductImage({
+        name: file.originalname,
+        path: outputPath,
+        url: `${baseUrl}:${process.env.CDN_PORT}/${uploadPath}/${filename}`,
+        productId: product._id,
+      });
 
-    await productImage.save();
-    res.status(200).json({ message: 'Product image uploaded successfully', productImage });
+      await productImage.save();
+      uploadedImages.push(productImage);
+    }
+
+    res.status(200).json({ message: 'Product image uploaded successfully', uploadedImages });
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
@@ -335,10 +341,15 @@ export const getAllOwnedProducts = async (req, res) => {
     const productsWithCover = await Promise.all(
       products.map(async (product) => {
         const productCover = await ProductCover.findOne({ productId: product._id }).select('url');
+        const productImages = await ProductImage.find({ productId: product._id });
 
         return {
           ...product,
           productCover: productCover ? productCover.url : null,
+          productImages: productImages.map(img => ({
+            id: img._id,
+            url: img.url,
+          })),
         };
       })
     );
@@ -349,3 +360,31 @@ export const getAllOwnedProducts = async (req, res) => {
   }
 };
 
+export const getProductById = async (req, res) => {
+  const { productId } = req.params;
+
+  try {
+    const product = await Product.findById(productId)
+      .populate('categoryId', 'name')
+      .populate('shopId', 'name');
+
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    const coverImage = await ProductCover.findOne({ productId });
+    
+    const additionalImages = await ProductImage.find({ productId });
+
+    res.status(200).json({
+      product,
+      coverImage: coverImage ? coverImage.url : null, 
+      productImages: additionalImages.map(img => ({
+        id: img._id,
+        url: img.url,
+      })),
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};

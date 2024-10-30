@@ -68,7 +68,7 @@ export const uploadUserImage = async (req, res) => {
 
     res.status(200).json({ message: 'Image uploaded successfully', userImage });
   } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+    res.status(500).json({ message: 'Server error', error: 'User already have an image' });
   }
 };
 
@@ -83,7 +83,8 @@ export const updateUserImage = async (req, res) => {
   try {
     const user = await User.findById(userId);
 
-    const userImage = await UserImage.findOne(userId);
+    const userImage = await UserImage.findOne({ userId: userId });
+
     if (!userImage)
       return res.status(404).json({ message: 'User image not found.' });
 
@@ -125,7 +126,7 @@ export const deleteUserImage = async (req, res) => {
       return res.status(404).json({ message: 'User not found.' });
     }
 
-    const userImage = await UserImage.findOne({ userId });
+    const userImage = await UserImage.findOne({ userId: userId });
     if (!userImage)
       return res.status(404).json({ message: 'User image not found.' });
 
@@ -151,11 +152,13 @@ export const getUser = async (req, res) => {
       return res.status(404).json({ message: 'Invalid Token.' });
     }
 
-    const userImage = await UserImage.find({ userId: userId });
+    const userImage = await UserImage.find({ userId: userId }).select('-name -path -userId');
+    const userAddress = await Address.find({ userId: userId });
 
     res.status(200).json({
       user,
-      image: userImage ? userImage.url : null,
+      image: userImage ? userImage : null,
+      address: userAddress ? userAddress : null,
     });
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
@@ -172,11 +175,13 @@ export const getUserById = async (req, res) => {
       return res.status(404).json({ message: 'User not Found' });
     }
 
-    const userImage = await UserImage.find({ userId: userId });
+    const userImage = await UserImage.find({ userId: userId }).select('-name -path -userId');
+    const userAddress = await Address.find({ userId: userId });
 
     res.status(200).json({
       user,
-      image: userImage ? userImage.url : null,
+      image: userImage ? userImage : null,
+      address: userAddress ? userAddress : null,
     });
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
@@ -246,6 +251,26 @@ export const deleteAddress = async (req, res) => {
     await Address.deleteOne({ _id: addressId });
 
     res.status(200).json({ message: 'Address deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
+
+export const getAddress = async (req, res) => {
+  
+  const userId = req.user._id;
+
+  try {
+    const user = await User.findById(userId).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'Invalid Token.' });
+    }
+
+    const userAddress = await Address.find({ userId: userId });
+
+    res.status(200).json({
+      address: userAddress ? userAddress : null,
+    });
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
