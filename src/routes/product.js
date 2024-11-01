@@ -37,7 +37,6 @@ router.delete('/delete/cover/:productId', safeRoute, verifyRole('seller'), check
 
 router.get('/list', safeRoute, verifyRole('seller'), checkShop, getAllOwnedProducts);
 
-
 //BUYER ROUTE
 
 router.get('/:productId', safeRoute, getProductById);

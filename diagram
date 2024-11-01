@@ -20,6 +20,8 @@ Table Address {
   district String
   subdistrict String
   postalCode Number
+  createdAt Date
+  updatedAt Date
 }
 
 Table UserImage {
@@ -94,19 +96,20 @@ Table ProductCover {
   updatedAt Date
 }
 
-Table ProductChat {
-  _id ObjectId [pk]
-  productId ObjectId [ref: - Product._id]
-  userId ObjectId [ref: - User._id]
-  message String
-  createdAt Date
-  updatedAt Date
-}
-
 Table Category {
   _id ObjectId [pk]
   name String
   description String
+  createdAt Date
+  updatedAt Date
+}
+
+Table Discuss {
+  _id ObjectId [pk]
+  productId ObjectId [ref: - Product._id]
+  userId ObjectId [ref: - User._id]
+  replyId String [note: "DiskusiId", default: "null"]
+  chat String
   createdAt Date
   updatedAt Date
 }

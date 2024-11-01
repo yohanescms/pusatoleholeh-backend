@@ -18,6 +18,7 @@ export const createShop = async (req, res) => {
   try {
     const {
       name,
+      username,
       description,
       addressId,
     } = req.body;
@@ -30,6 +31,7 @@ export const createShop = async (req, res) => {
 
     const shop = new Shop({
       name,
+      username,
       description,
       ownerId,
       address: {
@@ -59,6 +61,7 @@ export const updateShop = async (req, res) => {
 
   const {
     name,
+    username,
     description,
     province,
     city,
@@ -75,6 +78,7 @@ export const updateShop = async (req, res) => {
     }
 
     shop.name = name || shop.name;
+    shop.username = username|| shop.username;
     shop.description = description || shop.description;
     shop.address.province = province || shop.address.province;
     shop.address.city = city || shop.address.city;
@@ -346,6 +350,30 @@ export const getShopById = async (req, res) => {
         image: shopImage,
         banner: shopBanner,
       });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
+
+export const getShopByName = async (req, res) => {
+  const { shopName } = req.params;
+
+  try {
+    const shop = await Shop.findOne({ username: shopName }).populate('ownerId', 'name');
+
+    if (!shop) {
+      return res.status(404).json({ message: 'Shop not found' });
+    }
+
+    const shopImage = await ShopImage.find({ shopId: shop._id });
+    const shopBanner = await ShopBanner.find({ shopId: shop._id });
+
+    res.status(200).json({
+      message: 'Shop found!',
+      shop,
+      image: shopImage,
+      banner: shopBanner,
+    });
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
   }

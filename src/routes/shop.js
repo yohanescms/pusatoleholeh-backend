@@ -1,5 +1,5 @@
 import express from 'express';
-import { createShop, updateShop, uploadShopImage, uploadShopBanner, updateShopImage, updateShopBanner, deleteShopImage, deleteShopBanner, getAllShops, getShopById, getShopInfo } from '../controllers/shop.js';
+import { createShop, updateShop, uploadShopImage, uploadShopBanner, updateShopImage, updateShopBanner, deleteShopImage, deleteShopBanner, getAllShops, getShopById, getShopInfo, getShopByName } from '../controllers/shop.js';
 import { safeRoute, verifyRole, checkShop } from '../middlewares/middleware.js';
 import { upload } from '../configs/multer.js';
 import { validateShopCreation, validateShopUpdate } from '../configs/validate.js';
