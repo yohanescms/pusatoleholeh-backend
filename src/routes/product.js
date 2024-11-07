@@ -12,8 +12,10 @@ import {
   deleteProductCover,
   getAllOwnedProducts,
   getProductById,
+  getProductsByShopId,
 } from "../controllers/product.js";
 import { safeRoute, verifyRole, checkShop } from '../middlewares/middleware.js';
+import { productTrack } from '../middlewares/tracker.js';
 import { upload } from '../configs/multer.js';
 import { validateProductCreation, validateProductUpdate } from '../configs/validate.js';
 
@@ -39,6 +41,8 @@ router.get('/list', safeRoute, verifyRole('seller'), checkShop, getAllOwnedProdu
 
 //BUYER ROUTE
 
-router.get('/:productId', safeRoute, getProductById);
+router.get('/:productId', productTrack, getProductById);
+
+router.get('/shop/:shopId', getProductsByShopId);
 
 export default router;

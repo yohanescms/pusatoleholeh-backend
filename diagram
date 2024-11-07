@@ -113,3 +113,9 @@ Table Discuss {
   createdAt Date
   updatedAt Date
 }
+
+Table ApiUsage {
+  _id ObjectId [pk]
+  endpoint String
+  count Number
+}

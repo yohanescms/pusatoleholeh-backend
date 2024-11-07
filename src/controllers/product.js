@@ -2,6 +2,8 @@ import Product from '../models/product.js';
 import ProductImage from '../models/productImage.js';
 import ProductCover from '../models/productCover.js';
 import Shop from '../models/shop.js';
+import ShopImage from '../models/shopImage.js';
+import ShopBanner from '../models/shopBanner.js';
 import Category from '../models/category.js';
 import sharp from 'sharp';
 import path from 'path';
@@ -384,6 +386,48 @@ export const getProductById = async (req, res) => {
         url: img.url,
       })),
     });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
+
+export const getProductsByShopId = async (req, res) => {
+  try {
+    const { shopId } = req.params;
+
+    const shops = await Shop.findById(shopId);
+
+    const products = await Product.find({ shopId, isActive: true })
+      .populate({
+        path: 'categoryId',
+        select: 'name description',
+      })
+      .lean();
+
+    const shopImages = await ShopImage.find({ shopId });
+    const shopBanner = await ShopBanner.find({ shopId });
+
+    if (!shops) {
+      return res.status(404).json({ message: 'No such shop available' });
+    }
+
+    const productsWithImages = await Promise.all(
+      products.map(async (product) => {
+        const productCover = await ProductCover.findOne({ productId: product._id }).select('url');
+        const productImages = await ProductImage.find({ productId: product._id }).select('url');
+
+        return {
+          shops,
+          ...product,
+          shopImages: shopImages ? shopImages : null,
+          shopBanner: shopBanner ? shopBanner :null,
+          productCover: productCover ? productCover.url : null,
+          productImages: productImages.map(img => img.url),
+        };
+      })
+    );
+
+    res.status(200).json(productsWithImages);
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
   }

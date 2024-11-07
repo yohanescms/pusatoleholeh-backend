@@ -26,6 +26,6 @@ router.get('/', safeRoute, verifyRole('seller'), checkShop, getShopInfo);
 
 router.get('/all', getAllShops);
 router.get('/:shopId', getShopById);
-
+router.get('/name/:shopName', getShopByName);
 
 export default router;

@@ -9,7 +9,6 @@ import userRoutes from './routes/user.js';
 import categoryRoutes from './routes/category.js'
 import discussRoutes from './routes/discuss.js';
 import searchRoutes from './routes/search.js';
-import worldRoutes from './routes/world.js';
 import passportConfig from './configs/passport.js';
 import path from 'path';
 import { connectMongoDB } from './configs/mongodb.js';
@@ -43,7 +42,6 @@ app.use('/shop', shopRoutes);
 app.use('/user', userRoutes);
 app.use('/discuss', discussRoutes);
 app.use('/search', searchRoutes);
-app.use('/', worldRoutes);
 
 connectMongoDB();
 
