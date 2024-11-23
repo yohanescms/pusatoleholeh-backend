@@ -395,7 +395,10 @@ export const getProductsByShopId = async (req, res) => {
   try {
     const { shopId } = req.params;
 
-    const shops = await Shop.findById(shopId);
+    const shop = await Shop.findById(shopId);
+    if (!shop) {
+      return res.status(404).json({ message: 'No such shop available' });
+    }
 
     const products = await Product.find({ shopId, isActive: true })
       .populate({
@@ -407,22 +410,14 @@ export const getProductsByShopId = async (req, res) => {
     const shopImages = await ShopImage.find({ shopId });
     const shopBanner = await ShopBanner.find({ shopId });
 
-    if (!shops) {
-      return res.status(404).json({ message: 'No such shop available' });
-    }
-
     const productsWithImages = await Promise.all(
       products.map(async (product) => {
         const productCover = await ProductCover.findOne({ productId: product._id }).select('url');
         const productImages = await ProductImage.find({ productId: product._id }).select('url');
 
         return {
-          shops,
           ...product,
-          shopImages: shopImages ? shopImages : null,
-          shopBanner: shopBanner ? shopBanner :null,
-          productCover: productCover ? productCover.url : null,
-          productImages: productImages.map(img => img.url),
+          productCover: productCover ? productCover.url : null
         };
       })
     );

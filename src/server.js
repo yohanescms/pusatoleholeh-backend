@@ -13,6 +13,8 @@ import passportConfig from './configs/passport.js';
 import path from 'path';
 import { connectMongoDB } from './configs/mongodb.js';
 import { fileURLToPath } from 'url';
+import cors from 'cors';
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,6 +36,9 @@ app.use(express.json());
 app.use(session({ secret: process.env.SESSION_SECRET, resave: true, saveUninitialized: true }));
 app.use(passport.initialize());
 app.use(passport.session());
+
+app.use(cors());
+cdn.use(cors());
 
 app.use('/auth', authRoutes);
 app.use('/category', categoryRoutes);

@@ -108,7 +108,7 @@ Table Discuss {
   _id ObjectId [pk]
   productId ObjectId [ref: - Product._id]
   userId ObjectId [ref: - User._id]
-  replyId String [note: "DiskusiId", default: "null"]
+  replyId ObjectId [ref: - Product._id, default: "null"]
   chat String
   createdAt Date
   updatedAt Date
@@ -118,4 +118,37 @@ Table ApiUsage {
   _id ObjectId [pk]
   endpoint String
   count Number
+  createdAt Date
+  updatedAt Date
 }
+
+Table HeroBanner {
+  _id ObjectId [pk]
+  path String
+  url String
+  createdAt Date
+  updatedAt Date
+}
+
+Table Article {
+  _id ObjectId [pk]
+  productId ObjectId [ref: - Product._id, default: "null"]
+  userId ObjectId [ref: - User._id]
+  title String
+  content String
+  createdAt Date
+  updatedAt Date
+}
+
+Table ArticleBanner {
+  _id ObjectId [pk]
+  name String
+  path String
+  url String
+  articleId ObjectId [ref: - Article._id]
+  createdAt Date
+  updatedAt Date
+}
+
+
+
