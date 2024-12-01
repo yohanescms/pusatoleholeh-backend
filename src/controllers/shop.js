@@ -8,6 +8,7 @@ import path from 'path';
 import fs from 'fs';
 import { encodeFileName } from '../configs/crypto.js';
 import { uploadPathCheck } from '../configs/fs.js';
+import { normalizePath, normalizeBaseUrl } from '../configs/normalize.js';
 
 export const createShop = async (req, res) => {
   const errors = validationResult(req);
@@ -113,10 +114,13 @@ export const uploadShopImage = async (req, res) => {
 
     await sharp(req.file.buffer).toFormat('webp').toFile(outputPath);
 
+    const normalizedUploadPath = normalizePath(uploadPath);
+    const normalizedBaseUrl = normalizeBaseUrl(baseUrl);
+
     const shopImage = new ShopImage({
       name: req.file.originalname,
       path: outputPath,
-      url: `${baseUrl}:${process.env.CDN_PORT}/${uploadPath}/${filename}`,
+      url: `${normalizedBaseUrl}:${process.env.CDN_PORT}/${normalizedUploadPath}/${filename}`,
       shopId: shop._id,
     });
     await shopImage.save();
@@ -147,10 +151,13 @@ export const uploadShopBanner = async (req, res) => {
 
     await sharp(req.file.buffer).toFormat('webp').toFile(outputPath);
 
+    const normalizedUploadPath = normalizePath(uploadPath);
+    const normalizedBaseUrl = normalizeBaseUrl(baseUrl);
+
     const shopBanner = new ShopBanner({
       name: req.file.originalname,
       path: outputPath,
-      url: `${baseUrl}:${process.env.CDN_PORT}/${uploadPath}/${filename}`,
+      url: `${normalizedBaseUrl}:${process.env.CDN_PORT}/${normalizedUploadPath}/${filename}`,
       shopId: shop._id,
     });
     await shopBanner.save();
@@ -193,9 +200,12 @@ export const updateShopImage = async (req, res) => {
 
     await sharp(req.file.buffer).toFormat('webp').toFile(outputPath);
 
+    const normalizedUploadPath = normalizePath(uploadPath);
+    const normalizedBaseUrl = normalizeBaseUrl(baseUrl);
+
     shopImage.name = req.file.originalname;
     shopImage.path = outputPath;
-    shopImage.url = `${baseUrl}:${process.env.CDN_PORT}/${uploadPath}/${filename}`;
+    shopImage.url = `${normalizedBaseUrl}:${process.env.CDN_PORT}/${normalizedUploadPath}/${filename}`;
     await shopImage.save();
 
     res
@@ -236,9 +246,12 @@ export const updateShopBanner = async (req, res) => {
 
     await sharp(req.file.buffer).toFormat('webp').toFile(outputPath);
 
+    const normalizedUploadPath = normalizePath(uploadPath);
+    const normalizedBaseUrl = normalizeBaseUrl(baseUrl);
+
     shopBanner.name = req.file.originalname;
     shopBanner.path = outputPath;
-    shopBanner.url = `${baseUrl}:${process.env.CDN_PORT}/${uploadPath}/${filename}`;
+    shopBanner.url = `${normalizedBaseUrl}:${process.env.CDN_PORT}/${normalizedUploadPath}/${filename}`;
     await shopBanner.save();
 
     res

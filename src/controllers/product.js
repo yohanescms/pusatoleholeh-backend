@@ -11,6 +11,7 @@ import fs from 'fs';
 import { validationResult } from 'express-validator';
 import { encodeFileName } from '../configs/crypto.js';
 import { uploadPathCheck } from '../configs/fs.js';
+import { normalizePath, normalizeBaseUrl } from '../configs/normalize.js';
 
 export const createProduct = async (req, res) => {
   const errors = validationResult(req);
@@ -186,10 +187,13 @@ export const uploadProductImage = async (req, res) => {
 
       await sharp(file.buffer).toFormat('webp').toFile(outputPath);
 
+      const normalizedUploadPath = normalizePath(uploadPath);
+      const normalizedBaseUrl = normalizeBaseUrl(baseUrl);
+
       const productImage = new ProductImage({
         name: file.originalname,
         path: outputPath,
-        url: `${baseUrl}:${process.env.CDN_PORT}/${uploadPath}/${filename}`,
+        url: `${normalizedBaseUrl}:${process.env.CDN_PORT}/${normalizedUploadPath}/${filename}`,
         productId: product._id,
       });
 
@@ -245,10 +249,13 @@ export const uploadProductCover = async (req, res) => {
 
     await sharp(req.file.buffer).toFormat('webp').toFile(outputPath);
 
+    const normalizedUploadPath = normalizePath(uploadPath);
+    const normalizedBaseUrl = normalizeBaseUrl(baseUrl);
+
     const productCover = new ProductCover({
       name: req.file.originalname,
       path: outputPath,
-      url: `${baseUrl}:${process.env.CDN_PORT}/${uploadPath}/${filename}`,
+      url: `${normalizedBaseUrl}:${process.env.CDN_PORT}/${normalizedUploadPath}/${filename}`,
       productId: product._id,
     });
 
@@ -288,9 +295,12 @@ export const updateProductCover = async (req, res) => {
 
     await sharp(req.file.buffer).toFormat('webp').toFile(outputPath);
 
+    const normalizedUploadPath = normalizePath(uploadPath);
+    const normalizedBaseUrl = normalizeBaseUrl(baseUrl);
+
     productCover.name = req.file.originalname;
     productCover.path = outputPath;
-    productCover.url = `${baseUrl}:${process.env.CDN_PORT}/${uploadPath}/${filename}`;
+    productCover.url = `${normalizedBaseUrl}:${process.env.CDN_PORT}/${normalizedUploadPath}/${filename}`;
     await productCover.save();
 
     res.status(200).json({ message: 'Product cover updated successfully', productCover });

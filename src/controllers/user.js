@@ -7,6 +7,7 @@ import path from 'path';
 import fs from 'fs';
 import { encodeFileName } from '../configs/crypto.js';
 import { uploadPathCheck } from '../configs/fs.js';
+import { normalizePath, normalizeBaseUrl } from '../configs/normalize.js';
 
 export const updateUser = async (req, res) => {
   const errors = validationResult(req);
@@ -58,10 +59,13 @@ export const uploadUserImage = async (req, res) => {
 
     await sharp(req.file.buffer).toFormat('webp').toFile(outputPath);
 
+    const normalizedUploadPath = normalizePath(uploadPath);
+    const normalizedBaseUrl = normalizeBaseUrl(baseUrl);
+
     const userImage = new UserImage({
       name: req.file.originalname,
       path: outputPath,
-      url: `${baseUrl}:${process.env.CDN_PORT}/${uploadPath}/${filename}`,
+      url: `${normalizedBaseUrl}:${process.env.CDN_PORT}/${normalizedUploadPath}/${filename}`,
       userId,
     });
     await userImage.save();
@@ -102,9 +106,12 @@ export const updateUserImage = async (req, res) => {
 
     await sharp(req.file.buffer).toFormat('webp').toFile(outputPath);
 
+    const normalizedUploadPath = normalizePath(uploadPath);
+    const normalizedBaseUrl = normalizeBaseUrl(baseUrl);
+
     userImage.name = req.file.originalname;
     userImage.path = outputPath;
-    userImage.url = `${baseUrl}:${process.env.CDN_PORT}/${uploadPath}/${filename}`;
+    userImage.url = `${normalizedBaseUrl}:${process.env.CDN_PORT}/${normalizedUploadPath}/${filename}`;
     await userImage.save();
 
     res

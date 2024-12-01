@@ -4,6 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import { encodeFileName } from '../configs/crypto.js';
 import { uploadPathCheck } from '../configs/fs.js';
+import { normalizePath, normalizeBaseUrl } from '../configs/normalize.js';
 
 export const uploadHeroBanner = async (req, res) => {
     if (!req.file) {
@@ -21,11 +22,14 @@ export const uploadHeroBanner = async (req, res) => {
       const outputPath = path.join(uploadPath, filename);
   
       await sharp(req.file.buffer).toFormat('webp').toFile(outputPath);
+
+      const normalizedUploadPath = normalizePath(uploadPath);
+      const normalizedBaseUrl = normalizeBaseUrl(baseUrl);
   
       const heroBanner = new HeroBanner({
         name: req.file.originalname,
         path: outputPath,
-        url: `${baseUrl}:${process.env.CDN_PORT}/${uploadPath}/${filename}`,
+        url: `${normalizedBaseUrl}:${process.env.CDN_PORT}/${normalizedUploadPath}/${filename}`,
       });
       await heroBanner.save();
   
