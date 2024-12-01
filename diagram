@@ -150,5 +150,11 @@ Table ArticleBanner {
   updatedAt Date
 }
 
-
-
+Table Cart {
+  _id ObjectId [pk]
+  userId ObjectId [ref: > User._id]
+  productId ObjectId [ref: > Product._id]
+  quantity Number
+  createdAt Date
+  updatedAt Date
+}

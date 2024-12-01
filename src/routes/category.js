@@ -1,5 +1,5 @@
 import express from 'express';
-import { addCategory, updateCategory, deleteCategory, getCategory } from '../controllers/category.js';
+import { addCategory, updateCategory, deleteCategory, getCategory, getProductsByCategory } from '../controllers/category.js';
 import { validateCategoryId, validateAddCategory, validateUpdateCategory } from '../configs/validate.js';
 import { safeRoute, verifyRole, checkShop } from '../middlewares/middleware.js';
 
@@ -14,5 +14,6 @@ router.delete('/delete/:categoryId', validateCategoryId, safeRoute, verifyRole('
 // user routes
 
 router.get('/', getCategory);
+router.get('/:categoryId', getProductsByCategory);
 
 export default router;

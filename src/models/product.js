@@ -12,6 +12,6 @@ const productSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
-productSchema.index({ name: 'text', description: 'text', category: 'text' });
+productSchema.index({ name: 'text', description: 'text' });
 
 export default mongoose.model('Product', productSchema);

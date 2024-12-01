@@ -20,14 +20,13 @@ export const createShop = async (req, res) => {
       name,
       username,
       description,
-      addressId,
+      province,
+      city,
+      district,
+      subdistrict,
+      postalCode,
     } = req.body;
     const ownerId = req.user._id;
-    const shopAddress = await Address.findOne({ _id: addressId, userId: ownerId });
-
-    if (!shopAddress) {
-      return res.status(404).json({ message: 'Address not found.' });
-    }
 
     const shop = new Shop({
       name,
@@ -35,11 +34,11 @@ export const createShop = async (req, res) => {
       description,
       ownerId,
       address: {
-        province: shopAddress.province,
-        city: shopAddress.city,
-        district: shopAddress.district,
-        subdistrict: shopAddress.subdistrict,
-        postalCode: shopAddress.postalCode,
+        province,
+        city,
+        district,
+        subdistrict,
+        postalCode,
       },
     });
 

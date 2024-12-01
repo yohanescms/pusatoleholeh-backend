@@ -1,4 +1,7 @@
 import Category from '../models/category.js';
+import Product from '../models/product.js';
+import ProductImage from '../models/productImage.js';
+import ProductCover from '../models/productCover.js';
 import { validationResult } from 'express-validator';
 
 export const addCategory = async (req, res) => {
@@ -66,6 +69,47 @@ export const getCategory = async (req, res) => {
     const categories = await Category.find();
 
     res.status(200).json({ message: 'Categories retrieved successfully', categories });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
+
+export const getProductsByCategory = async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+
+    const category = await Category.findById(categoryId);
+    if (!category) {
+      return res.status(404).json({ message: 'Category not found' });
+    }
+
+    const products = await Product.find({ categoryId, isActive: true })
+      .populate({
+        path: 'categoryId',
+        select: 'name description',
+      })
+      .populate({
+        path: 'shopId',
+        select: 'name address',
+      })
+      .lean();
+
+    const productsWithImages = await Promise.all(
+      products.map(async (product) => {
+        const productCover = await ProductCover.findOne({ productId: product._id }).select('url');
+
+        return {
+          ...product,
+          productCover: productCover ? productCover.url : null,
+        };
+      })
+    );
+
+    res.status(200).json({
+      message: 'Products retrieved successfully',
+      category: { name: category.name, description: category.description },
+      products: productsWithImages,
+    });
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
   }

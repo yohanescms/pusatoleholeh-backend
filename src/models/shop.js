@@ -16,6 +16,6 @@ const shopSchema = new mongoose.Schema({
     updatedAt: { type: Date, default: Date.now }
 });
 
-shopSchema.index({ name: 'text', description: 'text' });
+shopSchema.index({ name: 'text', username: 'text', description: 'text' });
 
 export default mongoose.model('Shop', shopSchema);

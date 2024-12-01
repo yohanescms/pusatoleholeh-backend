@@ -86,3 +86,4 @@ export const googleCallback = (req, res) => {
   const token = jwt.sign({ id: req.user._id, role: req.user.role }, process.env.JWT_SECRET, { expiresIn: '1d' });
   res.redirect(`/auth/success?token=${token}`);
 };
+
