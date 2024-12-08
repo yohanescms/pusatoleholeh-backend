@@ -10,6 +10,9 @@ import categoryRoutes from './routes/category.js'
 import discussRoutes from './routes/discuss.js';
 import searchRoutes from './routes/search.js';
 import heroRoutes from './routes/hero.js';
+import courierRoutes from './routes/courier.js';
+import voucherRoutes from './routes/voucher.js';
+import transactionRoutes from './routes/transaction.js';
 import passportConfig from './configs/passport.js';
 import path from 'path';
 import { connectMongoDB } from './configs/mongodb.js';
@@ -48,6 +51,9 @@ app.use('/user', userRoutes);
 app.use('/discuss', discussRoutes);
 app.use('/search', searchRoutes);
 app.use('/hero', heroRoutes);
+app.use('/courier', courierRoutes);
+app.use('/voucher', voucherRoutes)
+app.use('/transaction', transactionRoutes)
 
 connectMongoDB();
 

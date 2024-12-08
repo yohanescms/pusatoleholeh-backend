@@ -1,6 +1,7 @@
 import User from '../models/user.js';
 import UserImage from '../models/userImage.js';
 import Address from '../models/address.js'
+import PaymentMethod from '../models/paymentMethod.js';
 import { validationResult } from 'express-validator';
 import sharp from 'sharp';
 import path from 'path';
@@ -8,6 +9,7 @@ import fs from 'fs';
 import { encodeFileName } from '../configs/crypto.js';
 import { uploadPathCheck } from '../configs/fs.js';
 import { normalizePath, normalizeBaseUrl } from '../configs/normalize.js';
+import paymentMethod from '../models/paymentMethod.js';
 
 export const updateUser = async (req, res) => {
   const errors = validationResult(req);
@@ -280,5 +282,71 @@ export const getAddress = async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
+
+export const addPaymentMethod = async (req, res) => {
+
+  const userId = req.user._id;
+  const { name } = req.body;
+  
+
+  try {
+    const newPaymentMethod = new PaymentMethod({ name, userId })
+    await newPaymentMethod.save();
+
+    res.status(200).json({ message: 'Payment method successfully added.'});
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: err.message});
+  }
+};
+
+export const addCredit = async (req, res) => {
+
+  const userId = req.user._id;
+  const { paymentId } = req.params;
+  const { amount } = req.query;
+
+  try {
+    const paymentMethod = await PaymentMethod.findOne({ _id: paymentId, userId });
+
+    if (!paymentMethod) {
+      return res.status(404).json({ message: 'Payment method not found.' });
+    }
+
+    const creditAmount = parseFloat(amount);
+    if (isNaN(creditAmount)) {
+      return res.status(400).json({ message: 'Invalid credit amount. Please provide a valid number.' });
+    }
+
+    paymentMethod.credit = (paymentMethod.credit || 0) + creditAmount;
+
+    await paymentMethod.save();
+
+    res.status(200).json({
+      message: 'Credit added successfully.',
+      updatedCredit: paymentMethod.credit,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: err.message});
+  }
+};
+
+export const getPayment= async (req, res) => {
+  
+  const userId = req.user._id;
+
+  try {
+    const paymentMethod = await PaymentMethod.findOne({ userId });
+
+    if (!paymentMethod) {
+      return res.status(404).json({ message: 'Payment method not found.' });
+    }
+    res.status(200).json({
+      message: 'Payment method retrieved successfully.',
+      paymentMethod,
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', userId });
   }
 };
