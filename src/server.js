@@ -13,6 +13,7 @@ import heroRoutes from './routes/hero.js';
 import courierRoutes from './routes/courier.js';
 import voucherRoutes from './routes/voucher.js';
 import transactionRoutes from './routes/transaction.js';
+import blogRoutes from './routes/blog.js';
 import passportConfig from './configs/passport.js';
 import path from 'path';
 import { connectMongoDB } from './configs/mongodb.js';
@@ -54,6 +55,7 @@ app.use('/hero', heroRoutes);
 app.use('/courier', courierRoutes);
 app.use('/voucher', voucherRoutes)
 app.use('/transaction', transactionRoutes)
+app.use('/blog', blogRoutes)
 
 connectMongoDB();
 
