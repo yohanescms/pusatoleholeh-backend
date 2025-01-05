@@ -114,3 +114,44 @@ export const getProductsByCategory = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
+
+export const uploadCategoryImage = async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: 'No image uploaded' });
+  }
+
+  try {
+    const { categoryId } = req.params;
+
+    const category = await Category.findById(categoryId);
+    if (!category) {
+      return res.status(404).json({ message: 'Category not found' });
+    }
+
+    const uploadPath = path.join(process.env.CATEGORY_UPLOAD_PATH);
+    uploadPathCheck(uploadPath); // Pastikan path upload tersedia
+
+    const filename = encodeFileName(req.file.originalname, 'category');
+    const outputPath = path.join(uploadPath, filename);
+
+    // Konversi ke format WebP
+    await sharp(req.file.buffer).toFormat('webp').toFile(outputPath);
+
+    // Normalisasi URL gambar
+    const normalizedBaseUrl = normalizeBaseUrl(process.env.CDN_BASE_URL);
+    const normalizedUploadPath = normalizePath(uploadPath);
+
+    const imageUrl = `${normalizedBaseUrl}/${normalizedUploadPath}/${filename}`;
+
+    // Update URL gambar pada kategori
+    category.imageUrl = imageUrl;
+    await category.save();
+
+    res.status(200).json({
+      message: 'Category image uploaded successfully',
+      imageUrl,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
