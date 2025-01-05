@@ -1,7 +1,10 @@
 import express from 'express';
-import { addCategory, updateCategory, deleteCategory, getCategory, getProductsByCategory } from '../controllers/category.js';
+import { addCategory, updateCategory, deleteCategory, getCategory, getProductsByCategory,uploadCategoryImage } from '../controllers/category.js';
 import { validateCategoryId, validateAddCategory, validateUpdateCategory } from '../configs/validate.js';
 import { safeRoute, verifyRole, checkShop } from '../middlewares/middleware.js';
+import { upload } from '../configs/multer.js'; // Tambahkan import ini
+
+
 
 const router = express.Router();
 
@@ -15,5 +18,5 @@ router.delete('/delete/:categoryId', validateCategoryId, safeRoute, verifyRole('
 
 router.get('/', getCategory);
 router.get('/:categoryId', getProductsByCategory);
-
+router.post('/upload/:categoryId',validateCategoryId,safeRoute,verifyRole('admin'),upload.single('image'),uploadCategoryImage);
 export default router;
